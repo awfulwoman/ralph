@@ -17,10 +17,10 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 ### Option 1: Copy to your project
 
 ```bash
-mkdir -p scripts/ralph
-cp /path/to/ralph/ralph.sh scripts/ralph/
-cp /path/to/ralph/ralph.md scripts/ralph/
-chmod +x scripts/ralph/ralph.sh
+mkdir -p yourproject/scripts/ralph
+cp ralph.sh yourproject/scripts/ralph/
+cp ralph.md yourproject/scripts/ralph/
+chmod +x yourproject/scripts/ralph/ralph.sh
 ```
 
 ### Option 2: Install skill globally
@@ -33,7 +33,7 @@ cp -r skills/ralph ~/.claude/skills/
 
 ```bash
 /plugin marketplace add awfulwoman/ralph
-/plugin install ralph-skills@ralph-marketplace
+/plugin install ralph-skills@awfulwoman-ralph-marketplace
 ```
 
 Available skill after installation:
@@ -53,6 +53,7 @@ Use the `/ralph` skill to plan a feature and create GitHub Issues:
 ```
 
 The skill will:
+
 1. Ask clarifying questions
 2. Break the feature into right-sized stories
 3. Create a GitHub milestone with goals/non-goals
@@ -79,23 +80,23 @@ Default is 10 iterations. Ralph will:
 
 Ralph uses these labels (auto-created on first run):
 
-| Label | Color | Meaning |
-|-------|-------|---------|
-| `ralph:todo` | Green | Story not started |
-| `ralph:in-progress` | Yellow | Agent working on it |
-| `ralph:done` | Purple | Story completed |
-| `ralph:failed` | Red | Story failed |
+| Label                | Color  | Meaning              |
+|----------------------|--------|----------------------|
+| `ralph:todo`         | Purple | Story not started    |
+| `ralph:in-progress`  | Yellow | Agent working on it  |
+| `ralph:done`         | Green  | Story completed      |
+| `ralph:failed`       | Red    | Story failed         |
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `ralph.sh` | Bash loop that picks issues and spawns agent instances |
-| `ralph.md` | Prompt template given to each agent instance |
-| `skills/ralph/` | Skill for planning features and creating GitHub Issues |
-| `progress.txt` | Append-only learnings for future iterations |
-| `.claude-plugin/` | Plugin manifest for Claude Code marketplace |
-| `flowchart/` | Interactive visualization of how Ralph works |
+| File               | Purpose                                                |
+|--------------------|--------------------------------------------------------|
+| `ralph.sh`         | Bash loop that picks issues and spawns agent instances |
+| `ralph.md`         | Prompt template given to each agent instance           |
+| `skills/ralph/`    | Skill for planning features and creating GitHub Issues |
+| `progress.txt`     | Append-only learnings for future iterations            |
+| `.claude-plugin/`  | Plugin manifest for Claude Code marketplace            |
+| `flowchart/`       | Interactive visualization of how Ralph works           |
 
 ## Flowchart
 

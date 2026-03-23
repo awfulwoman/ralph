@@ -49,9 +49,9 @@ fi
 
 # Create labels if they don't exist
 echo "Ensuring Ralph labels exist..."
-gh label create "ralph:todo" --color "0E8A16" --description "Story not started" --force 2>/dev/null || true
+gh label create "ralph:todo" --color "5319E7" --description "Story not started" --force 2>/dev/null || true
 gh label create "ralph:in-progress" --color "FBCA04" --description "Agent working on story" --force 2>/dev/null || true
-gh label create "ralph:done" --color "5319E7" --description "Story completed" --force 2>/dev/null || true
+gh label create "ralph:done" --color "0E8A16" --description "Story completed" --force 2>/dev/null || true
 gh label create "ralph:failed" --color "D93F0B" --description "Story failed" --force 2>/dev/null || true
 
 # Verify milestone exists
