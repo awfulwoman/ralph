@@ -142,9 +142,11 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   # Mark as in-progress so other instances don't pick it up
   gh issue edit "$ISSUE_NUMBER" --remove-label "ralph:todo" --add-label "ralph:in-progress" 2>/dev/null || true
 
-  # Build prompt: ralph.md instructions + issue context
-  PROMPT=$(cat "$SCRIPT_DIR/ralph.md")
-  PROMPT="$PROMPT
+  # Build prompt: ralph.md instructions + issue context (use temp file to avoid shell escaping issues)
+  PROMPT_FILE=$(mktemp)
+  trap "rm -f '$PROMPT_FILE'" EXIT
+  cat "$SCRIPT_DIR/ralph.md" > "$PROMPT_FILE"
+  cat >> "$PROMPT_FILE" <<ISSUE_EOF
 
 ---
 
@@ -154,10 +156,12 @@ for i in $(seq 1 $MAX_ITERATIONS); do
 **Branch:** $BRANCH
 **Milestone:** $MILESTONE
 
-$ISSUE_BODY"
+$ISSUE_BODY
+ISSUE_EOF
 
   # Spawn a fresh Claude Code instance for this issue
-  OUTPUT=$(echo "$PROMPT" | $TOOL_COMMAND $TOOL_ARGS 2>&1 | tee /dev/stderr) || true
+  OUTPUT=$($TOOL_COMMAND $TOOL_ARGS < "$PROMPT_FILE" 2>&1 | tee /dev/stderr) || true
+  rm -f "$PROMPT_FILE"
 
   echo "Iteration $i complete. Continuing..."
   sleep 2
