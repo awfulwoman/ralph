@@ -142,9 +142,9 @@ The milestone description should capture the high-level PRD context: goals, non-
 ### Create labels (if they don't exist)
 
 ```bash
-gh label create "ralph:todo" --color "0E8A16" --description "Story not started" --force
+gh label create "ralph:todo" --color "5319E7" --description "Story not started" --force
 gh label create "ralph:in-progress" --color "FBCA04" --description "Agent working on story" --force
-gh label create "ralph:done" --color "5319E7" --description "Story completed" --force
+gh label create "ralph:done" --color "0E8A16" --description "Story completed" --force
 gh label create "ralph:failed" --color "D93F0B" --description "Story failed" --force
 ```
 
