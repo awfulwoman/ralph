@@ -10,10 +10,10 @@ Claude Code skills that ship with Ralph.
 
 ## Installation
 
-Copy skills to your global Claude config:
+Copy skills to your global agent config:
 
 ```bash
-cp -r ralph ~/.claude/skills/
+cp -r ralph ~/.claude/skills/ # Claude as an example
 ```
 
 Or install via the Claude Code plugin marketplace:
@@ -25,7 +25,7 @@ Or install via the Claude Code plugin marketplace:
 
 ## Usage
 
-Invoke the skill in Claude Code:
+Invoke the skill in your agent:
 
 ```plain
 /ralph plan a task priority system

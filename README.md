@@ -8,7 +8,7 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 ## Prerequisites
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
+- A CLI LLM agent, such as [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - [GitHub CLI](https://cli.github.com) (`gh`) installed and authenticated
 - A git repository with a GitHub remote
 
@@ -63,19 +63,21 @@ The skill will:
 ### 2. Run Ralph
 
 ```bash
-yourproject/ralph.sh --milestone task-priority
+./ralph.sh --milestone <milestone-name>
+
+# Examples:
+./ralph.sh --milestone task-priority        # default 10 iterations
+./ralph.sh --milestone task-priority 20     # up to 20 iterations
 ```
 
-Default is 10 iterations. Ralph will:
+Each iteration, Ralph will:
 
-1. Create/checkout branch `ralph/<milestone-name>`
-2. Pick the oldest `ralph:todo` issue
-3. Implement that single story
-4. Run quality checks (typecheck, tests)
-5. Commit with message `feat: #<issue> - <title>`
-6. Update issue label to `ralph:done`, post a progress comment
-7. Append learnings to `progress.txt`
-8. Repeat until all issues are done or max iterations reached
+1. Pick the oldest `ralph:todo` issue in the milestone
+2. Spawn a fresh agent instance to implement it
+3. Run quality checks (typecheck, tests)
+4. Commit, mark the issue `ralph:done`, and move on
+
+Ralph stops when all issues are done or max iterations is reached.
 
 ## Labels
 

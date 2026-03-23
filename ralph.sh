@@ -2,7 +2,7 @@
 # Ralph — autonomous AI agent loop
 #
 # Picks the oldest ralph:todo issue in a milestone, spawns a fresh
-# Claude Code instance to implement it, then repeats until done.
+# agent instance to implement it, then repeats until done.
 #
 # Usage: ./ralph.sh --milestone <name> [max_iterations]
 
@@ -12,8 +12,10 @@ set -e
 
 MILESTONE=""
 MAX_ITERATIONS=10
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROGRESS_FILE="$SCRIPT_DIR/progress.txt"
+TOOL_COMMAND="claude"
+TOOL_ARGS="--dangerously-skip-permissions --print"
+WORKING_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # determine invoking script location
+PROGRESS_FILE="$WORKING_PATH/progress.txt"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -154,7 +156,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
 $ISSUE_BODY"
 
   # Spawn a fresh Claude Code instance for this issue
-  OUTPUT=$(echo "$PROMPT" | claude --dangerously-skip-permissions --print 2>&1 | tee /dev/stderr) || true
+  OUTPUT=$(echo "$PROMPT" | $TOOL_COMMAND $TOOL_ARGS 2>&1 | tee /dev/stderr) || true
 
   echo "Iteration $i complete. Continuing..."
   sleep 2
