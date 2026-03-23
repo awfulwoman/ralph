@@ -14,7 +14,8 @@ curl -fsSL "$BASE_URL/scripts/ralph.sh" -o scripts/ralph.sh
 curl -fsSL "$BASE_URL/scripts/ralph.md" -o scripts/ralph.md
 chmod +x scripts/ralph.sh
 
-echo "Installed scripts/ralph.sh and scripts/ralph.md to $(pwd)"
+INSTALLED_VERSION=$(grep '^RALPH_VERSION=' scripts/ralph.sh | cut -d'"' -f2)
+echo "Installed Ralph v${INSTALLED_VERSION} to $(pwd)"
 echo ""
 echo "Next steps:"
 echo "  1. Use /ralph-github to plan a feature and create GitHub Issues"
