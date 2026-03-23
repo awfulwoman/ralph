@@ -15,7 +15,6 @@
       "version": "1.2.0",
       "keywords": ["ralph", "prd", "automation", "agent", "planning"],
       "category": "productivity",
-      "commands": "./commands/",
       "skills": "./skills/"
     }
   ]
