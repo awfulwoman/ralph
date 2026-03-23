@@ -240,7 +240,16 @@ function App() {
     return [...stepNodes, ...noteNodes];
   };
 
-  const initialNodes = getNodes(1);
+  const initialNodes = (() => {
+    const stepNodes = allSteps.map((step, index) =>
+      createNode(step, index < 1, positions[step.id])
+    );
+    const noteNodes = notes.map(note => {
+      const noteVisible = 1 >= note.appearsWithStep;
+      return createNoteNode(note, noteVisible, positions[note.id]);
+    });
+    return [...stepNodes, ...noteNodes];
+  })();
   const initialEdges = edgeConnections.map((conn, index) =>
     createEdge(conn, index < 0)
   );
