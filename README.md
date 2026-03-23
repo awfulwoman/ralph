@@ -14,27 +14,28 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 ## Setup
 
-### Option 1: Copy to your project
+### Install Script: install the ralph script and prompt to your project
 
 ```bash
-mkdir -p yourproject/scripts/ralph
-cp ralph.sh yourproject/scripts/ralph/
-cp ralph.md yourproject/scripts/ralph/
-chmod +x yourproject/scripts/ralph/ralph.sh
+cp ralph.sh yourproject/ralph.sh
+cp ralph.md yourproject/ralph.md
+chmod +x yourproject/ralph.sh
 ```
 
-### Option 2: Install skill globally
-
-```bash
-cp -r skills/ralph ~/.claude/skills/
-```
-
-### Option 3: Use as Claude Code Plugin
+### Install Skills: automatically via the Claude Code Marketplace
 
 ```bash
 /plugin marketplace add awfulwoman/ralph
 /plugin install awful-ralph@awfulwoman-ralph-marketplace
 ```
+
+You can also install the skills manually:
+
+```bash
+cp -r skills/ralph ~/.claude/skills/
+```
+
+## Skills
 
 Available skill after installation:
 
@@ -62,7 +63,7 @@ The skill will:
 ### 2. Run Ralph
 
 ```bash
-./scripts/ralph/ralph.sh --milestone task-priority
+yourproject/ralph.sh --milestone task-priority
 ```
 
 Default is 10 iterations. Ralph will:
