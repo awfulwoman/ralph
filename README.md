@@ -1,4 +1,4 @@
-# Ralph
+# Ralph + GitHub Issues
 
 ![Ralph](ralph.png)
 
