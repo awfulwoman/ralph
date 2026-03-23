@@ -24,7 +24,12 @@ When you successfully complete the story:
 gh issue edit <number> --remove-label "ralph:in-progress" --add-label "ralph:done"
 ```
 
-2. Post a comment on the issue with what you did:
+2. Close the issue:
+```bash
+gh issue close <number>
+```
+
+3. Post a comment on the issue with what you did:
 ```bash
 gh issue comment <number> --body "## Completed
 - What was implemented
@@ -32,7 +37,7 @@ gh issue comment <number> --body "## Completed
 - Any learnings for future iterations"
 ```
 
-3. Check the acceptance criteria checkboxes in the issue body by editing it with the updated body (all boxes checked).
+4. Check the acceptance criteria checkboxes in the issue body by editing it with the updated body (all boxes checked).
 
 ## On Failure
 
