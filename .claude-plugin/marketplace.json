@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Skills for the Ralph autonomous agent system - Generate PRDs and convert them to prd.json format for autonomous execution",
-    "version": "1.1.0"
+    "version": "1.4.0"
   },
   "plugins": [
     {
