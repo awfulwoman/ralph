@@ -14,15 +14,20 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 ## Setup
 
-### Install Script: install the ralph script and prompt to your project
+### Install the Ralph script and prompt to your projct
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/awfulwoman/ralph/main/install.sh | bash
+```
+
+Or manually:
 
 ```bash
 cp ralph.sh yourproject/ralph.sh
 cp ralph.md yourproject/ralph.md
-chmod +x yourproject/ralph.sh
 ```
 
-### Install Skills: automatically via the Claude Code Marketplace
+### Install Skills
 
 ```bash
 /plugin marketplace add awfulwoman/ralph
@@ -31,17 +36,25 @@ chmod +x yourproject/ralph.sh
 
 You can also install the skills manually:
 
+For Claude:
+
 ```bash
 cp -r skills/ralph ~/.claude/skills/
 ```
 
+For other agents:
+
+```bash
+cp -r skills/ralph ~/<where your agent skills live>
+```
+
 ## Skills
 
-Available skill after installation:
+The following skill will be available after installation:
 
 - `/ralph` - Plan a feature and create GitHub Issues for autonomous execution
 
-Automatically invoked when you ask Claude to: "create a prd", "plan this feature", "write stories for", "spec out".
+Automatically invoked when you ask your agent to: "create a prd", "plan this feature", "write stories for", "spec out".
 
 ## Workflow
 
