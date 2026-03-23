@@ -7,7 +7,7 @@
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]
 
-RALPH_VERSION="2026.03.23.2248"
+RALPH_VERSION="2026.03.23.2310"
 
 set -e
 
@@ -125,7 +125,8 @@ echo ""
 
 # ── Main loop ────────────────────────────────────────────────────
 
-echo "Starting Ralph v$RALPH_VERSION - Branch: $BRANCH - Max iterations: $MAX_ITERATIONS"
+REPO_URL=$(gh repo view --json url --jq '.url' 2>/dev/null || echo "unknown")
+echo "Starting Ralph v$RALPH_VERSION - Repo: $REPO_URL - Branch: $BRANCH - Max iterations: $MAX_ITERATIONS"
 
 for i in $(seq 1 $MAX_ITERATIONS); do
   echo ""
