@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Skills for the Ralph autonomous agent system - Generate PRDs and convert them to prd.json format for autonomous execution",
-    "version": "1.4.0"
+    "version": "1.5.0"
   },
   "plugins": [
     {
       "name": "awful-ralph",
       "source": "./",
       "description": "PRD generation and conversion skills for the Ralph autonomous agent loop",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "keywords": ["ralph", "prd", "automation", "agent", "planning"],
       "category": "productivity",
       "skills": "./skills/"
