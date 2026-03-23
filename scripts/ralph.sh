@@ -93,9 +93,35 @@ if [ ! -f "$PROGRESS_FILE" ]; then
   echo "---"                    >> "$PROGRESS_FILE"
 fi
 
+# ── Report milestone issues ───────────────────────────────────────
+
+echo ""
+echo "Milestone: $MILESTONE"
+echo "---------------------------------------------------------------"
+
+TODO_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:todo" --json number,title --jq '.[] | "  [ ] #\(.number) \(.title)"' 2>/dev/null || true)
+DONE_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:done" --json number,title --jq '.[] | "  [x] #\(.number) \(.title)"' 2>/dev/null || true)
+IN_PROGRESS_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:in-progress" --json number,title --jq '.[] | "  [~] #\(.number) \(.title)"' 2>/dev/null || true)
+FAILED_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:failed" --json number,title --jq '.[] | "  [!] #\(.number) \(.title)"' 2>/dev/null || true)
+
+TODO_COUNT=$(echo "$TODO_ISSUES" | grep -c '#' 2>/dev/null || echo "0")
+DONE_COUNT=$(echo "$DONE_ISSUES" | grep -c '#' 2>/dev/null || echo "0")
+IN_PROGRESS_COUNT=$(echo "$IN_PROGRESS_ISSUES" | grep -c '#' 2>/dev/null || echo "0")
+FAILED_COUNT=$(echo "$FAILED_ISSUES" | grep -c '#' 2>/dev/null || echo "0")
+TOTAL=$((TODO_COUNT + DONE_COUNT + IN_PROGRESS_COUNT + FAILED_COUNT))
+
+[[ -n "$DONE_ISSUES" ]]        && echo "$DONE_ISSUES"
+[[ -n "$IN_PROGRESS_ISSUES" ]] && echo "$IN_PROGRESS_ISSUES"
+[[ -n "$TODO_ISSUES" ]]        && echo "$TODO_ISSUES"
+[[ -n "$FAILED_ISSUES" ]]      && echo "$FAILED_ISSUES"
+
+echo "---------------------------------------------------------------"
+echo "Total: $TOTAL | Done: $DONE_COUNT | Todo: $TODO_COUNT | In-progress: $IN_PROGRESS_COUNT | Failed: $FAILED_COUNT"
+echo ""
+
 # ── Main loop ────────────────────────────────────────────────────
 
-echo "Starting Ralph - Milestone: $MILESTONE - Branch: $BRANCH - Max iterations: $MAX_ITERATIONS"
+echo "Starting Ralph - Branch: $BRANCH - Max iterations: $MAX_ITERATIONS"
 
 for i in $(seq 1 $MAX_ITERATIONS); do
   echo ""
