@@ -9,7 +9,7 @@
   },
   "plugins": [
     {
-      "name": "ralph-skills",
+      "name": "awful-ralph",
       "source": "./",
       "description": "PRD generation and conversion skills for the Ralph autonomous agent loop",
       "version": "1.0.0",
