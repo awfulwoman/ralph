@@ -104,10 +104,10 @@ DONE_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:done" --json
 IN_PROGRESS_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:in-progress" --json number,title --jq '.[] | "  [~] #\(.number) \(.title)"' 2>/dev/null || true)
 FAILED_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:failed" --json number,title --jq '.[] | "  [!] #\(.number) \(.title)"' 2>/dev/null || true)
 
-TODO_COUNT=$(echo "$TODO_ISSUES" | grep -c '#' 2>/dev/null || echo "0")
-DONE_COUNT=$(echo "$DONE_ISSUES" | grep -c '#' 2>/dev/null || echo "0")
-IN_PROGRESS_COUNT=$(echo "$IN_PROGRESS_ISSUES" | grep -c '#' 2>/dev/null || echo "0")
-FAILED_COUNT=$(echo "$FAILED_ISSUES" | grep -c '#' 2>/dev/null || echo "0")
+TODO_COUNT=$(echo "$TODO_ISSUES" | grep -c '#' 2>/dev/null || true)
+DONE_COUNT=$(echo "$DONE_ISSUES" | grep -c '#' 2>/dev/null || true)
+IN_PROGRESS_COUNT=$(echo "$IN_PROGRESS_ISSUES" | grep -c '#' 2>/dev/null || true)
+FAILED_COUNT=$(echo "$FAILED_ISSUES" | grep -c '#' 2>/dev/null || true)
 TOTAL=$((TODO_COUNT + DONE_COUNT + IN_PROGRESS_COUNT + FAILED_COUNT))
 
 [[ -n "$DONE_ISSUES" ]]        && echo "$DONE_ISSUES"
