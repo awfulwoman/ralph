@@ -1,10 +1,13 @@
 #!/bin/bash
 # Ralph — autonomous AI agent loop
+# Version: 2026.03.23.2248
 #
 # Picks the oldest ralph:todo issue in a milestone, spawns a fresh
 # agent instance to implement it, then repeats until done.
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]
+
+RALPH_VERSION="2026.03.23.2248"
 
 set -e
 
@@ -20,6 +23,7 @@ PROGRESS_FILE="$WORKING_PATH/progress.txt"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --version)     echo "Ralph v$RALPH_VERSION"; exit 0 ;;
     --milestone)   MILESTONE="$2";        shift 2 ;;
     --milestone=*) MILESTONE="${1#*=}";    shift   ;;
     *)
@@ -121,7 +125,7 @@ echo ""
 
 # ── Main loop ────────────────────────────────────────────────────
 
-echo "Starting Ralph - Branch: $BRANCH - Max iterations: $MAX_ITERATIONS"
+echo "Starting Ralph v$RALPH_VERSION - Branch: $BRANCH - Max iterations: $MAX_ITERATIONS"
 
 for i in $(seq 1 $MAX_ITERATIONS); do
   echo ""
