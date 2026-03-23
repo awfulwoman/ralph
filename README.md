@@ -1,6 +1,6 @@
 # Ralph
 
-![Ralph](ralph.webp)
+![Ralph](ralph.png)
 
 Ralph is an autonomous AI agent loop that runs AI coding tools repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `progress.txt`, and GitHub issue comments.
 
