@@ -5,6 +5,7 @@
   "author": {
     "name": "awfulwoman"
   },
+  "commands": "./commands/",
   "skills": "./skills/",
   "keywords": ["ralph", "prd", "automation", "agent", "planning", "requirements"]
 }
