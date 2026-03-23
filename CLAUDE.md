@@ -27,7 +27,7 @@ cd flowchart && npm run build
 
 ## How It Works
 
-1. Use the `/ralph` skill to plan a feature → creates a GitHub milestone + issues
+1. Use the `/ralph-github` skill to plan a feature → creates a GitHub milestone + issues
 2. Run `./scripts/ralph.sh --milestone <name>` to start the loop
 3. Each iteration picks the oldest `ralph:todo` issue, implements it, updates labels
 4. Loop ends when all issues are done

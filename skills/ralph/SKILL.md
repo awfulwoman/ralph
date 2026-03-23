@@ -1,5 +1,5 @@
 ---
-name: ralph
+name: ralph-github
 description: "Plan a feature and create GitHub Issues for Ralph autonomous execution. Use when planning a feature, starting a new project, or creating stories for Ralph. Triggers on: create a prd, write prd for, plan this feature, requirements for, spec out, convert this prd, ralph."
 user-invocable: true
 ---

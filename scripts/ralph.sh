@@ -64,7 +64,7 @@ MILESTONE_COUNT=$(gh api repos/{owner}/{repo}/milestones \
   --jq "[.[] | select(.title == \"$MILESTONE\")] | length" 2>/dev/null || echo "0")
 
 if [[ "$MILESTONE_COUNT" -eq 0 ]]; then
-  echo "Error: Milestone '$MILESTONE' not found. Run /ralph first to create it."
+  echo "Error: Milestone '$MILESTONE' not found. Run /ralph-github first to create it."
   exit 1
 fi
 

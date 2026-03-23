@@ -6,7 +6,7 @@ Claude Code skills that ship with Ralph.
 
 | Skill | Description |
 |-------|-------------|
-| [`ralph`](ralph/) | Plan a feature and create GitHub Issues for autonomous execution by Ralph |
+| [`ralph-github`](ralph/) | Plan a feature and create GitHub Issues for autonomous execution by Ralph |
 
 ## Installation
 
@@ -28,7 +28,7 @@ Or install via the Claude Code plugin marketplace:
 Invoke the skill in your agent:
 
 ```plain
-/ralph plan a task priority system
+/ralph-github plan a task priority system
 ```
 
 Also triggers automatically when you say: "create a prd", "plan this feature", "write stories for", "spec out".

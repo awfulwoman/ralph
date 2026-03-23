@@ -57,7 +57,7 @@ cp -r skills/ralph ~/<where your agent skills live>
 
 The following skill will be available after installation:
 
-- `/ralph` - Plan a feature and create GitHub Issues for autonomous execution
+- `/ralph-github` - Plan a feature and create GitHub Issues for autonomous execution
 
 Automatically invoked when you ask your agent to: "create a prd", "plan this feature", "write stories for", "spec out".
 
@@ -65,10 +65,10 @@ Automatically invoked when you ask your agent to: "create a prd", "plan this fea
 
 ### 1. Plan a Feature
 
-Use the `/ralph` skill to plan a feature and create GitHub Issues:
+Use the `/ralph-github` skill to plan a feature and create GitHub Issues:
 
 ```plain
-/ralph plan a task priority system
+/ralph-github plan a task priority system
 ```
 
 The skill will:

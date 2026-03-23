@@ -17,5 +17,5 @@ chmod +x scripts/ralph.sh
 echo "Installed scripts/ralph.sh and scripts/ralph.md to $(pwd)"
 echo ""
 echo "Next steps:"
-echo "  1. Use /ralph to plan a feature and create GitHub Issues"
+echo "  1. Use /ralph-github to plan a feature and create GitHub Issues"
 echo "  2. Run: ./scripts/ralph.sh --milestone <name>"
