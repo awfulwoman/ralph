@@ -33,7 +33,7 @@ cp -r skills/ralph ~/.claude/skills/
 
 ```bash
 /plugin marketplace add awfulwoman/ralph
-/plugin install ralph-skills@awfulwoman-ralph-marketplace
+/plugin install awful-ralph@awfulwoman-ralph-marketplace
 ```
 
 Available skill after installation:
@@ -100,9 +100,9 @@ Ralph uses these labels (auto-created on first run):
 
 ## Flowchart
 
-[![Ralph Flowchart](ralph-flowchart.png)](https://snarktank.github.io/ralph/)
+[![Ralph Flowchart](ralph-flowchart.png)](https://awfulwoman.github.io/ralph/)
 
-**[View Interactive Flowchart](https://snarktank.github.io/ralph/)** - Click through to see each step with animations.
+**[View Interactive Flowchart](https://awfulwoman.github.io/ralph/)** - Click through to see each step with animations.
 
 ```bash
 cd flowchart
