@@ -14,13 +14,13 @@ cd flowchart && npm run dev
 cd flowchart && npm run build
 
 # Run Ralph
-./ralph.sh --milestone <name> [max_iterations]
+./scripts/ralph.sh --milestone <name> [max_iterations]
 ```
 
 ## Key Files
 
-- `ralph.sh` - The bash loop that picks issues and spawns fresh agent instances
-- `ralph.md` - Instructions given to each agent instance
+- `scripts/ralph.sh` - The bash loop that picks issues and spawns fresh agent instances
+- `scripts/ralph.md` - Instructions given to each agent instance
 - `CLAUDE.md` - Project-level instructions
 - `skills/ralph/SKILL.md` - Skill for planning features and creating GitHub Issues
 - `flowchart/` - Interactive React Flow diagram explaining how Ralph works
@@ -28,7 +28,7 @@ cd flowchart && npm run build
 ## How It Works
 
 1. Use the `/ralph` skill to plan a feature → creates a GitHub milestone + issues
-2. Run `ralph.sh --milestone <name>` to start the loop
+2. Run `./scripts/ralph.sh --milestone <name>` to start the loop
 3. Each iteration picks the oldest `ralph:todo` issue, implements it, updates labels
 4. Loop ends when all issues are done
 

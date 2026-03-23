@@ -1,6 +1,6 @@
 # Ralph + GitHub Issues
 
-![Ralph](ralph.png)
+![Ralph](assets/ralph.png)
 
 Ralph is an autonomous AI agent loop that runs AI coding tools repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `progress.txt`, and GitHub issue comments.
 
@@ -8,7 +8,7 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 ## Prerequisites
 
-- A CLI LLM agent, such as [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
+- A CLI agent, such as [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - [GitHub CLI](https://cli.github.com) (`gh`) installed and authenticated
 - A git repository with a GitHub remote
 
@@ -20,12 +20,15 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 curl -fsSL https://raw.githubusercontent.com/awfulwoman/ralph/main/install.sh | bash
 ```
 
-Or manually:
+<details>
+<summary>Or install script manually</summary>
 
 ```bash
-cp ralph.sh yourproject/ralph.sh
-cp ralph.md yourproject/ralph.md
+mkdir -p yourproject/scripts
+cp scripts/ralph.sh yourproject/scripts/ralph.sh
+cp scripts/ralph.md yourproject/scripts/ralph.md
 ```
+</details>
 
 ### Install Skills
 
@@ -34,7 +37,8 @@ cp ralph.md yourproject/ralph.md
 /plugin install awful-ralph@awfulwoman-ralph-marketplace
 ```
 
-You can also install the skills manually:
+<details>
+<summary>Or install skills manually</summary>
 
 For Claude:
 
@@ -47,6 +51,7 @@ For other agents:
 ```bash
 cp -r skills/ralph ~/<where your agent skills live>
 ```
+</details>
 
 ## Skills
 
@@ -76,11 +81,11 @@ The skill will:
 ### 2. Run Ralph
 
 ```bash
-./ralph.sh --milestone <milestone-name>
+./scripts/ralph.sh --milestone <milestone-name>
 
 # Examples:
-./ralph.sh --milestone task-priority        # default 10 iterations
-./ralph.sh --milestone task-priority 20     # up to 20 iterations
+./scripts/ralph.sh --milestone task-priority        # default 10 iterations
+./scripts/ralph.sh --milestone task-priority 20     # up to 20 iterations
 ```
 
 Each iteration, Ralph will:
@@ -107,8 +112,8 @@ Ralph uses these labels (auto-created on first run):
 
 | File               | Purpose                                                |
 |--------------------|--------------------------------------------------------|
-| `ralph.sh`         | Bash loop that picks issues and spawns agent instances |
-| `ralph.md`         | Prompt template given to each agent instance           |
+| `scripts/ralph.sh` | Bash loop that picks issues and spawns agent instances |
+| `scripts/ralph.md` | Prompt template given to each agent instance           |
 | `skills/ralph/`    | Skill for planning features and creating GitHub Issues |
 | `progress.txt`     | Append-only learnings for future iterations            |
 | `.claude-plugin/`  | Plugin manifest for Claude Code marketplace            |
@@ -116,7 +121,7 @@ Ralph uses these labels (auto-created on first run):
 
 ## Flowchart
 
-[![Ralph Flowchart](ralph-flowchart.png)](https://awfulwoman.github.io/ralph/)
+[![Ralph Flowchart](assets/ralph-flowchart.png)](https://awfulwoman.github.io/ralph/)
 
 **[View Interactive Flowchart](https://awfulwoman.github.io/ralph/)** - Click through to see each step with animations.
 
@@ -188,7 +193,7 @@ gh issue view <number> --comments
 
 ## Customizing the Prompt
 
-After copying `ralph.md` to your project, customize it:
+After copying `scripts/ralph.md` to your project, customize it:
 
 - Add project-specific quality check commands
 - Include codebase conventions

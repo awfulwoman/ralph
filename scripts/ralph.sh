@@ -4,7 +4,7 @@
 # Picks the oldest ralph:todo issue in a milestone, spawns a fresh
 # agent instance to implement it, then repeats until done.
 #
-# Usage: ./ralph.sh --milestone <name> [max_iterations]
+# Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]
 
 set -e
 
@@ -14,7 +14,8 @@ MILESTONE=""
 MAX_ITERATIONS=10
 TOOL_COMMAND="claude"
 TOOL_ARGS="--dangerously-skip-permissions --print"
-WORKING_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # determine invoking script location
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKING_PATH="$(pwd)"
 PROGRESS_FILE="$WORKING_PATH/progress.txt"
 
 while [[ $# -gt 0 ]]; do
@@ -33,7 +34,7 @@ done
 
 if [[ -z "$MILESTONE" ]]; then
   echo "Error: --milestone <name> is required."
-  echo "Usage: ./ralph.sh --milestone <name> [max_iterations]"
+  echo "Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]"
   exit 1
 fi
 
