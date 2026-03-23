@@ -2,7 +2,7 @@
 
 ## Overview
 
-Ralph is an autonomous AI agent loop that runs an agent repeatedly until all PRD items are complete. Each iteration is a fresh instance with clean context.
+Ralph is an autonomous AI agent loop that runs an agent repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context.
 
 ## Commands
 
@@ -13,20 +13,31 @@ cd flowchart && npm run dev
 # Build the flowchart
 cd flowchart && npm run build
 
-# Run Ralph with Amp (default)
-./ralph.sh [max_iterations]
-
-# Run Ralph with Claude Code
-./ralph.sh --tool claude [max_iterations]
+# Run Ralph
+./ralph.sh --milestone <name> [max_iterations]
 ```
 
 ## Key Files
 
-- `ralph.sh` - The bash loop that spawns fresh AI instances (supports `--tool amp` or `--tool claude`)
-- `ralph.md` - Instructions for the Ralph loop
-- `CLAUDE.md` - Instructions given to each Claude Code instance
-- `prd.json.example` - Example PRD format
+- `ralph.sh` - The bash loop that picks issues and spawns fresh agent instances
+- `ralph.md` - Instructions given to each agent instance
+- `CLAUDE.md` - Project-level instructions
+- `skills/ralph/SKILL.md` - Skill for planning features and creating GitHub Issues
 - `flowchart/` - Interactive React Flow diagram explaining how Ralph works
+
+## How It Works
+
+1. Use the `/ralph` skill to plan a feature → creates a GitHub milestone + issues
+2. Run `ralph.sh --milestone <name>` to start the loop
+3. Each iteration picks the oldest `ralph:todo` issue, implements it, updates labels
+4. Loop ends when all issues are done
+
+## Labels
+
+- `ralph:todo` — story not started
+- `ralph:in-progress` — agent is working on it
+- `ralph:done` — story completed
+- `ralph:failed` — story failed
 
 ## Flowchart
 
@@ -43,6 +54,6 @@ npm run dev
 ## Patterns
 
 - Each iteration spawns a fresh agent instance with clean context
-- Memory persists via git history, `progress.txt`, and `prd.json`
+- Memory persists via git history, `progress.txt`, and GitHub issue comments
 - Stories should be small enough to complete in one context window
-- Always update AGENTS.md with discovered patterns for future iterations
+- Progress is tracked via GitHub milestone completion percentage

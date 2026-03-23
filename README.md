@@ -2,123 +2,99 @@
 
 ![Ralph](ralph.webp)
 
-Ralph is an autonomous AI agent loop that runs AI coding tools repeatedly until all PRD items are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `progress.txt`, and `prd.json`.
+Ralph is an autonomous AI agent loop that runs AI coding tools repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `progress.txt`, and GitHub issue comments.
 
 Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 ## Prerequisites
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
-- `jq` CLI tool installed
-- A git repository for your project
+- [GitHub CLI](https://cli.github.com) (`gh`) installed and authenticated
+- A git repository with a GitHub remote
 
 ## Setup
 
 ### Option 1: Copy to your project
 
-Copy the ralph files into your project:
-
 ```bash
-# From your project root
 mkdir -p scripts/ralph
 cp /path/to/ralph/ralph.sh scripts/ralph/
-
-# Copy the prompt template for your AI tool of choice:
-cp /path/to/ralph/CLAUDE.md scripts/ralph/CLAUDE.md
-
+cp /path/to/ralph/ralph.md scripts/ralph/
 chmod +x scripts/ralph/ralph.sh
 ```
 
-### Option 2: Install skills globally
-
-Copy the skills to your Claude config for use across all projects:
-
-For Claude Code (manual)
+### Option 2: Install skill globally
 
 ```bash
-cp -r skills/prd ~/.claude/skills/
 cp -r skills/ralph ~/.claude/skills/
 ```
 
-### Option 3: Use as Claude Code Marketplace
-
-Add the Ralph marketplace to Claude Code:
+### Option 3: Use as Claude Code Plugin
 
 ```bash
 /plugin marketplace add awfulwoman/ralph
-```
-
-Then install the skills:
-
-```bash
 /plugin install ralph-skills@ralph-marketplace
 ```
 
-Available skills after installation:
+Available skill after installation:
 
-- `/prd` - Generate Product Requirements Documents
-- `/ralph` - Convert PRDs to prd.json format
+- `/ralph` - Plan a feature and create GitHub Issues for autonomous execution
 
-Skills are automatically invoked when you ask Claude to:
-
-- "create a prd", "write prd for", "plan this feature"
-- "convert this prd", "turn into ralph format", "create prd.json"
+Automatically invoked when you ask Claude to: "create a prd", "plan this feature", "write stories for", "spec out".
 
 ## Workflow
 
-### 1. Create a PRD
+### 1. Plan a Feature
 
-Use the PRD skill to generate a detailed requirements document:
-
-```plain
-Load the prd skill and create a PRD for [your feature description]
-```
-
-Answer the clarifying questions. The skill saves output to `tasks/prd-[feature-name].md`.
-
-### 2. Convert PRD to Ralph format
-
-Use the Ralph skill to convert the markdown PRD to JSON:
+Use the `/ralph` skill to plan a feature and create GitHub Issues:
 
 ```plain
-Load the ralph skill and convert tasks/prd-[feature-name].md to prd.json
+/ralph plan a task priority system
 ```
 
-This creates `prd.json` with user stories structured for autonomous execution.
+The skill will:
+1. Ask clarifying questions
+2. Break the feature into right-sized stories
+3. Create a GitHub milestone with goals/non-goals
+4. Create issues in dependency order with `ralph:todo` labels
 
-### 3. Run Ralph
+### 2. Run Ralph
 
 ```bash
-
-# Using Claude Code
-./scripts/ralph/ralph.sh [max_iterations]
+./scripts/ralph/ralph.sh --milestone task-priority
 ```
 
-Default is 10 iterations.
+Default is 10 iterations. Ralph will:
 
-Ralph will:
-
-1. Create a feature branch (from PRD `branchName`)
-2. Pick the highest priority story where `passes: false`
+1. Create/checkout branch `ralph/<milestone-name>`
+2. Pick the oldest `ralph:todo` issue
 3. Implement that single story
 4. Run quality checks (typecheck, tests)
-5. Commit if checks pass
-6. Update `prd.json` to mark story as `passes: true`
+5. Commit with message `feat: #<issue> - <title>`
+6. Update issue label to `ralph:done`, post a progress comment
 7. Append learnings to `progress.txt`
-8. Repeat until all stories pass or max iterations reached
+8. Repeat until all issues are done or max iterations reached
+
+## Labels
+
+Ralph uses these labels (auto-created on first run):
+
+| Label | Color | Meaning |
+|-------|-------|---------|
+| `ralph:todo` | Green | Story not started |
+| `ralph:in-progress` | Yellow | Agent working on it |
+| `ralph:done` | Purple | Story completed |
+| `ralph:failed` | Red | Story failed |
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `ralph.sh` | The bash loop that spawns fresh AI instances |
-| `CLAUDE.md` | Prompt template for Claude Code |
-| `prd.json` | User stories with `passes` status (the task list) |
-| `prd.json.example` | Example PRD format for reference |
+| `ralph.sh` | Bash loop that picks issues and spawns agent instances |
+| `ralph.md` | Prompt template given to each agent instance |
+| `skills/ralph/` | Skill for planning features and creating GitHub Issues |
 | `progress.txt` | Append-only learnings for future iterations |
-| `skills/prd/` | Skill for generating PRDs |
-| `skills/ralph/` | Skill for converting PRDs to JSON |
-| `.claude-plugin/` | Plugin manifest for Claude Code marketplace discovery |
+| `.claude-plugin/` | Plugin manifest for Claude Code marketplace |
 | `flowchart/` | Interactive visualization of how Ralph works |
 
 ## Flowchart
@@ -126,8 +102,6 @@ Ralph will:
 [![Ralph Flowchart](ralph-flowchart.png)](https://snarktank.github.io/ralph/)
 
 **[View Interactive Flowchart](https://snarktank.github.io/ralph/)** - Click through to see each step with animations.
-
-The `flowchart/` directory contains the source code. To run locally:
 
 ```bash
 cd flowchart
@@ -139,15 +113,16 @@ npm run dev
 
 ### Each Iteration = Fresh Context
 
-Each iteration spawns a **new AI instance** (Amp or Claude Code) with clean context. The only memory between iterations is:
+Each iteration spawns a **new agent instance** with clean context. The only memory between iterations is:
 
 - Git history (commits from previous iterations)
 - `progress.txt` (learnings and context)
-- `prd.json` (which stories are done)
+- GitHub issue comments (what each iteration did)
+- GitHub milestone (which stories are done via labels)
 
 ### Small Tasks
 
-Each PRD item should be small enough to complete in one context window. If a task is too big, the LLM runs out of context before finishing and produces poor code.
+Each issue should be small enough to complete in one context window. If a task is too big, the LLM runs out of context before finishing and produces poor code.
 
 Right-sized stories:
 
@@ -161,16 +136,6 @@ Too big (split these):
 - "Build a dashboard"
 - "Add authentication"
 - "Refactor the API"
-
-### AGENTS.md Updates Are Critical
-
-After each iteration, Ralph updates the relevant `AGENTS.md` files with learnings. This is key because AI coding tools automatically read these files, so future iterations (and future human developers) benefit from discovered patterns, gotchas, and conventions.
-
-Examples of what to add to AGENTS.md:
-
-- Patterns discovered ("this codebase uses X for Y")
-- Gotchas ("do not forget to update Z when changing W")
-- Useful context ("the settings panel is in component X")
 
 ### Feedback Loops
 
@@ -186,34 +151,31 @@ Frontend stories must include "Verify in browser using dev-browser skill" in acc
 
 ### Stop Condition
 
-When all stories have `passes: true`, Ralph outputs `<promise>COMPLETE</promise>` and the loop exits.
+When no `ralph:todo` issues remain in the milestone, Ralph exits successfully.
 
 ## Debugging
 
-Check current state:
-
 ```bash
-# See which stories are done
-cat prd.json | jq '.userStories[] | {id, title, passes}'
+# See milestone progress
+gh issue list --milestone "<name>" --json number,title,labels --jq '.[] | {number, title, status: .labels[].name}'
 
 # See learnings from previous iterations
 cat progress.txt
 
 # Check git history
 git log --oneline -10
+
+# See comments on a specific issue
+gh issue view <number> --comments
 ```
 
 ## Customizing the Prompt
 
-After copying `prompt.md` to your project, customize it:
+After copying `ralph.md` to your project, customize it:
 
 - Add project-specific quality check commands
 - Include codebase conventions
 - Add common gotchas for your stack
-
-## Archiving
-
-Ralph automatically archives previous runs when you start a new feature (different `branchName`). Archives are saved to `archive/YYYY-MM-DD-feature-name/`.
 
 ## References
 
