@@ -7,7 +7,7 @@
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>]
 
-RALPH_VERSION="2026.03.24.1413"
+RALPH_VERSION="2026.03.24.1418"
 
 set -e
 
@@ -15,9 +15,9 @@ set -e
 
 MILESTONE=""
 MAX_ITERATIONS=10
+MODEL="claude-sonnet-4-6"
 VERBOSE=false
 TOOL_COMMAND="claude"
-TOOL_ARGS="--dangerously-skip-permissions --print"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKING_PATH="$(pwd)"
 PROGRESS_FILE="$SCRIPT_DIR/progress.txt"
@@ -30,6 +30,8 @@ while [[ $# -gt 0 ]]; do
     --milestone=*) MILESTONE="${1#*=}";      shift   ;;
     --iterations)  MAX_ITERATIONS="$2";      shift 2 ;;
     --iterations=*) MAX_ITERATIONS="${1#*=}"; shift   ;;
+    --model)       MODEL="$2";              shift 2 ;;
+    --model=*)     MODEL="${1#*=}";         shift   ;;
     *)             shift ;;
   esac
 done
@@ -192,7 +194,7 @@ echo ""
 # ── Main loop ────────────────────────────────────────────────────
 
 REPO_URL=$(gh repo view --json url --jq '.url' 2>/dev/null || echo "unknown")
-echo "Starting Ralph v$RALPH_VERSION - Repo: $REPO_URL - Branch: $BRANCH - Max iterations: $MAX_ITERATIONS"
+echo "Starting Ralph v$RALPH_VERSION - Repo: $REPO_URL - Branch: $BRANCH - Model: $MODEL - Max iterations: $MAX_ITERATIONS"
 
 for i in $(seq 1 $MAX_ITERATIONS); do
   echo ""
@@ -264,6 +266,7 @@ ISSUE_EOF
 
   # Spawn a fresh Claude Code instance for this issue
   $VERBOSE && echo "  Prompt: $PROMPT_FILE"
+  TOOL_ARGS="--dangerously-skip-permissions --print --model $MODEL"
   $VERBOSE && echo "  Spawning: $TOOL_COMMAND $TOOL_ARGS < $PROMPT_FILE"
   OUTPUT=$($TOOL_COMMAND $TOOL_ARGS < "$PROMPT_FILE" 2>&1 | tee /dev/stderr) || true
   rm -f "$PROMPT_FILE"
