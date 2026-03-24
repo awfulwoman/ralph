@@ -8,7 +8,7 @@ Ralph is an autonomous AI agent loop that runs an agent repeatedly until all Git
 
 ```bash
 # Run Ralph
-./scripts/ralph.sh --milestone <name> [max_iterations]
+./scripts/ralph.sh --milestone <name> [--iterations <n>]
 ```
 
 ## Key Files

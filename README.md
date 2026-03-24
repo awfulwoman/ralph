@@ -86,8 +86,8 @@ The skill will:
 ./scripts/ralph.sh --milestone <milestone-name>
 
 # Examples:
-./scripts/ralph.sh --milestone task-priority        # default 10 iterations
-./scripts/ralph.sh --milestone task-priority 20     # up to 20 iterations
+./scripts/ralph.sh --milestone task-priority                # default 10 iterations
+./scripts/ralph.sh --milestone task-priority --iterations 20 # up to 20 iterations
 ```
 
 Each iteration, Ralph will:

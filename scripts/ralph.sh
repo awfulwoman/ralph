@@ -5,9 +5,9 @@
 # Picks the oldest ralph:todo issue in a milestone, spawns a fresh
 # agent instance to implement it, then repeats until done.
 #
-# Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]
+# Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>]
 
-RALPH_VERSION="2026.03.24.1142"
+RALPH_VERSION="2026.03.24.1145"
 
 set -e
 
@@ -25,22 +25,18 @@ PROGRESS_FILE="$SCRIPT_DIR/progress.txt"
 while [[ $# -gt 0 ]]; do
   case $1 in
     --version)     echo "Ralph v$RALPH_VERSION"; exit 0 ;;
-    --verbose|-v)  VERBOSE=true;           shift   ;;
-    --milestone)   MILESTONE="$2";        shift 2 ;;
-    --milestone=*) MILESTONE="${1#*=}";    shift   ;;
-    *)
-      # Bare number = max iterations
-      if [[ "$1" =~ ^[0-9]+$ ]]; then
-        MAX_ITERATIONS="$1"
-      fi
-      shift
-      ;;
+    --verbose|-v)  VERBOSE=true;              shift   ;;
+    --milestone)   MILESTONE="$2";           shift 2 ;;
+    --milestone=*) MILESTONE="${1#*=}";      shift   ;;
+    --iterations)  MAX_ITERATIONS="$2";      shift 2 ;;
+    --iterations=*) MAX_ITERATIONS="${1#*=}"; shift   ;;
+    *)             shift ;;
   esac
 done
 
 if [[ -z "$MILESTONE" ]]; then
   echo "Error: --milestone <name> is required."
-  echo "Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]"
+  echo "Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>]"
   exit 1
 fi
 
