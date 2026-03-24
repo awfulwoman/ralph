@@ -53,7 +53,7 @@ npm run dev
 
 ## Versioning
 
-When modifying `scripts/ralph.sh`, always update the `RALPH_VERSION` variable (near the top of the file) to the current date/time in `YYYY.MM.DD.HHMM` format.
+When modifying `scripts/ralph.sh`, always update the `RALPH_VERSION` variable (near the top of the file) to the current date/time in `YYYY.MM.DD.HHMM` format using the Europe/Berlin timezone.
 
 ## Patterns
 
