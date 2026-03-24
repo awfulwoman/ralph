@@ -7,13 +7,13 @@ You are an autonomous coding agent working on a software project.
 You have been assigned a single GitHub issue. The issue details are at the bottom of this prompt under "Current Issue".
 
 1. Read the issue title, body, and acceptance criteria
-2. Read `progress.txt` if it exists (check Codebase Patterns section first)
+2. Read `scripts/progress.txt` if it exists (check Codebase Patterns section first)
 3. Ensure you're on the correct branch (specified in the issue context)
 4. Implement the story described in the issue
 5. Run quality checks (e.g., typecheck, lint, test — use whatever your project requires)
 6. If checks pass, commit ALL changes with message: `feat: #<issue-number> - <issue title>\n\nCloses #<issue-number>`
 7. Mark the issue as done and post a progress comment (see below)
-8. Append your progress to `progress.txt`
+8. Append your progress to `scripts/progress.txt`
 
 ## On Success
 
@@ -53,7 +53,7 @@ gh issue comment <number> --body "## Failed
 
 ## Progress Report
 
-APPEND to progress.txt (never replace, always append):
+APPEND to scripts/progress.txt (never replace, always append):
 ```
 ## [Date/Time] - #<issue-number> <issue-title>
 - What was implemented
@@ -69,7 +69,7 @@ The learnings section is critical — it helps future iterations avoid repeating
 
 ## Consolidate Patterns
 
-If you discover a **reusable pattern** that future iterations should know, add it to the `## Codebase Patterns` section at the TOP of progress.txt (create it if it doesn't exist):
+If you discover a **reusable pattern** that future iterations should know, add it to the `## Codebase Patterns` section at the TOP of scripts/progress.txt (create it if it doesn't exist):
 
 ```
 ## Codebase Patterns
@@ -103,4 +103,4 @@ A frontend story is NOT complete until browser verification passes.
 - Work on ONE story per iteration (the one assigned to you below)
 - Commit frequently
 - Keep CI green
-- Read the Codebase Patterns section in progress.txt before starting
+- Read the Codebase Patterns section in scripts/progress.txt before starting

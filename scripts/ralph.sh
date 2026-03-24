@@ -7,7 +7,7 @@
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]
 
-RALPH_VERSION="2026.03.24.1135"
+RALPH_VERSION="2026.03.24.1142"
 
 set -e
 
@@ -20,7 +20,7 @@ TOOL_COMMAND="claude"
 TOOL_ARGS="--dangerously-skip-permissions --print"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKING_PATH="$(pwd)"
-PROGRESS_FILE="$WORKING_PATH/progress.txt"
+PROGRESS_FILE="$SCRIPT_DIR/progress.txt"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
