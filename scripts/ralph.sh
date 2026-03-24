@@ -7,7 +7,7 @@
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>]
 
-RALPH_VERSION="2026.03.24.1145"
+RALPH_VERSION="2026.03.24.1219"
 
 set -e
 
@@ -93,6 +93,13 @@ finalize() {
 
   echo ""
   echo "---------------------------------------------------------------"
+
+  # Clean up progress file — it's in the branch history but doesn't need to persist
+  if [[ -f "$PROGRESS_FILE" ]]; then
+    git rm "$PROGRESS_FILE" --quiet 2>/dev/null || true
+    git commit -m "chore: remove progress.txt after Ralph run" --quiet 2>/dev/null || true
+  fi
+
   echo "Pushing branch $BRANCH to origin..."
   git push -u origin "$BRANCH"
 

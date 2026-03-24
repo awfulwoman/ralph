@@ -28,6 +28,7 @@ mkdir -p yourproject/scripts
 cp scripts/ralph.sh yourproject/scripts/ralph.sh
 cp scripts/ralph.md yourproject/scripts/ralph.md
 ```
+
 </details>
 
 ### Install Skills
@@ -112,13 +113,13 @@ Ralph uses these labels (auto-created on first run):
 
 ## Key Files
 
-| File               | Purpose                                                |
-|--------------------|--------------------------------------------------------|
-| `scripts/ralph.sh` | Bash loop that picks issues and spawns agent instances |
-| `scripts/ralph.md` | Prompt template given to each agent instance           |
-| `skills/ralph/`    | Skill for planning features and creating GitHub Issues |
-| `scripts/progress.txt`     | Append-only learnings for future iterations            |
-| `.claude-plugin/`  | Plugin manifest for Claude Code marketplace            |
+| File                   | Purpose                                                |
+|------------------------|--------------------------------------------------------|
+| `scripts/ralph.sh`     | Bash loop that picks issues and spawns agent instances |
+| `scripts/ralph.md`     | Prompt template given to each agent instance           |
+| `scripts/progress.txt` | Append-only learnings for future iterations            |
+| `skills/ralph/`        | Skill for planning features and creating GitHub Issues |
+| `.claude-plugin/`      | Plugin manifest for Claude Code marketplace            |
 
 ## Critical Concepts
 
