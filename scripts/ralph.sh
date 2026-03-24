@@ -7,7 +7,7 @@
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]
 
-RALPH_VERSION="2026.03.24.0015"
+RALPH_VERSION="2026.03.24.1108"
 
 set -e
 
@@ -137,11 +137,10 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   echo "==============================================================="
 
   # Pick the oldest ralph:todo issue in this milestone
-  $VERBOSE && echo "  Querying: gh issue list --milestone '$MILESTONE' --label 'ralph:todo' --sort created --limit 1"
+  $VERBOSE && echo "  Querying: gh issue list --milestone '$MILESTONE' --label 'ralph:todo' --limit 1"
   ISSUE_JSON=$(gh issue list \
     --milestone "$MILESTONE" \
     --label "ralph:todo" \
-    --sort created \
     --json number,title,body \
     --limit 1 2>/dev/null || echo "[]")
   $VERBOSE && echo "  Result: $ISSUE_JSON"
