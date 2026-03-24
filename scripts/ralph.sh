@@ -7,7 +7,7 @@
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]
 
-RALPH_VERSION="2026.03.24.1108"
+RALPH_VERSION="2026.03.24.1126"
 
 set -e
 

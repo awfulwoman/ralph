@@ -11,7 +11,7 @@ You have been assigned a single GitHub issue. The issue details are at the botto
 3. Ensure you're on the correct branch (specified in the issue context)
 4. Implement the story described in the issue
 5. Run quality checks (e.g., typecheck, lint, test — use whatever your project requires)
-6. If checks pass, commit ALL changes with message: `feat: #<issue-number> - <issue title>`
+6. If checks pass, commit ALL changes with message: `feat: #<issue-number> - <issue title>\n\nCloses #<issue-number>`
 7. Mark the issue as done and post a progress comment (see below)
 8. Append your progress to `progress.txt`
 
@@ -24,12 +24,7 @@ When you successfully complete the story:
 gh issue edit <number> --remove-label "ralph:in-progress" --add-label "ralph:done"
 ```
 
-2. Close the issue:
-```bash
-gh issue close <number>
-```
-
-3. Post a comment on the issue with what you did:
+2. Post a comment on the issue with what you did:
 ```bash
 gh issue comment <number> --body "## Completed
 - What was implemented
@@ -37,7 +32,7 @@ gh issue comment <number> --body "## Completed
 - Any learnings for future iterations"
 ```
 
-4. Check the acceptance criteria checkboxes in the issue body by editing it with the updated body (all boxes checked).
+3. Check the acceptance criteria checkboxes in the issue body by editing it with the updated body (all boxes checked).
 
 ## On Failure
 
