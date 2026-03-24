@@ -7,7 +7,7 @@
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]
 
-RALPH_VERSION="2026.03.24.1126"
+RALPH_VERSION="2026.03.24.1131"
 
 set -e
 
@@ -90,6 +90,54 @@ if [[ "$CURRENT_BRANCH" != "$BRANCH" ]]; then
   fi
 fi
 
+# ── Finalize: push, create PR, switch back to main ──────────────
+
+finalize() {
+  local STATUS="$1"  # "complete" or "max-iterations"
+
+  echo ""
+  echo "---------------------------------------------------------------"
+  echo "Pushing branch $BRANCH to origin..."
+  git push -u origin "$BRANCH"
+
+  # Set PR title based on status
+  local PR_TITLE="Ralph: $MILESTONE"
+  local PR_DRAFT=""
+  if [[ "$STATUS" == "max-iterations" ]]; then
+    PR_TITLE="WIP: Ralph: $MILESTONE"
+    PR_DRAFT="--draft"
+  fi
+
+  # Create PR if one doesn't already exist for this branch
+  EXISTING_PR=$(gh pr list --head "$BRANCH" --state all --json number --jq '.[0].number' 2>/dev/null || true)
+  if [[ -n "$EXISTING_PR" ]]; then
+    echo "PR #$EXISTING_PR already exists for $BRANCH"
+    gh pr edit "$EXISTING_PR" --title "$PR_TITLE" 2>/dev/null || true
+    if [[ "$STATUS" == "complete" ]]; then
+      gh pr ready "$EXISTING_PR" 2>/dev/null || true
+    fi
+    PR_URL=$(gh pr view "$EXISTING_PR" --json url --jq '.url')
+  else
+    echo "Creating pull request..."
+    PR_URL=$(gh pr create \
+      --title "$PR_TITLE" \
+      --body "Automated PR from Ralph for milestone **$MILESTONE**.
+
+## Status: $STATUS" \
+      --head "$BRANCH" $PR_DRAFT 2>&1)
+  fi
+
+  echo "Switching back to main..."
+  git checkout main
+
+  echo ""
+  echo "==============================================================="
+  echo "  Ralph finished ($STATUS)"
+  echo "  Branch: $BRANCH"
+  echo "  PR:     $PR_URL"
+  echo "==============================================================="
+}
+
 # ── Initialize progress file ────────────────────────────────────
 
 if [ ! -f "$PROGRESS_FILE" ]; then
@@ -165,6 +213,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
 
     echo ""
     echo "Ralph completed all tasks! No remaining ralph:todo issues."
+    finalize "complete"
     exit 0
   fi
 
@@ -212,5 +261,5 @@ done
 
 echo ""
 echo "Ralph reached max iterations ($MAX_ITERATIONS)."
-echo "Check milestone progress: gh issue list --milestone \"$MILESTONE\""
+finalize "max-iterations"
 exit 1
