@@ -39,6 +39,6 @@ When modifying `scripts/ralph.sh`, always update the `RALPH_VERSION` variable (n
 ## Patterns
 
 - Each iteration spawns a fresh agent instance with clean context
-- Memory persists via git history, `progress.txt`, and GitHub issue comments
+- Memory persists via git history, `scripts/progress.txt`, and GitHub issue comments
 - Stories should be small enough to complete in one context window
 - Progress is tracked via GitHub milestone completion percentage

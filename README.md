@@ -2,7 +2,7 @@
 
 ![Ralph](assets/ralph.png)
 
-Ralph is an autonomous AI agent loop that runs AI coding tools repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `progress.txt`, and GitHub issue comments.
+Ralph is an autonomous AI agent loop that runs AI coding tools repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `scripts/progress.txt`, and GitHub issue comments.
 
 Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
@@ -117,7 +117,7 @@ Ralph uses these labels (auto-created on first run):
 | `scripts/ralph.sh` | Bash loop that picks issues and spawns agent instances |
 | `scripts/ralph.md` | Prompt template given to each agent instance           |
 | `skills/ralph/`    | Skill for planning features and creating GitHub Issues |
-| `progress.txt`     | Append-only learnings for future iterations            |
+| `scripts/progress.txt`     | Append-only learnings for future iterations            |
 | `.claude-plugin/`  | Plugin manifest for Claude Code marketplace            |
 
 ## Critical Concepts
@@ -127,7 +127,7 @@ Ralph uses these labels (auto-created on first run):
 Each iteration spawns a **new agent instance** with clean context. The only memory between iterations is:
 
 - Git history (commits from previous iterations)
-- `progress.txt` (learnings and context)
+- `scripts/progress.txt` (learnings and context)
 - GitHub issue comments (what each iteration did)
 - GitHub milestone (which stories are done via labels)
 
@@ -171,7 +171,7 @@ When no `ralph:todo` issues remain in the milestone, Ralph exits successfully.
 gh issue list --milestone "<name>" --json number,title,labels --jq '.[] | {number, title, status: .labels[].name}'
 
 # See learnings from previous iterations
-cat progress.txt
+cat scripts/progress.txt
 
 # Check git history
 git log --oneline -10
