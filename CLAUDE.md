@@ -22,7 +22,7 @@ Ralph is an autonomous AI agent loop that runs an agent repeatedly until all Git
 
 1. Use the `/ralph-github` skill to plan a feature → creates a GitHub milestone + issues
 2. Run `./scripts/ralph.sh --milestone <name>` to start the loop
-3. Each iteration picks the oldest `ralph:todo` issue, implements it, updates labels
+3. Each iteration passes all todo issues to the agent, which chooses the best one to work on
 4. Loop ends when all issues are done
 
 ## Labels
@@ -34,7 +34,7 @@ Ralph is an autonomous AI agent loop that runs an agent repeatedly until all Git
 
 ## Versioning
 
-When modifying `scripts/ralph.sh`, always update the `RALPH_VERSION` variable (near the top of the file) to the current date/time in `YYYY.MM.DD.HHMM` format using the Europe/Berlin timezone.
+When modifying `scripts/ralph.sh`, always update the `RALPH_VERSION` variable (near the top of the file) to the current date/time in `YYYY.MM.DD.HHMM` format using the Europe/Berlin timezone. You MUST run `TZ='Europe/Berlin' date '+%Y.%m.%d.%H%M'` to get the actual time — never guess or make up the value.
 
 ## Patterns
 
