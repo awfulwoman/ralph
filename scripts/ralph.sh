@@ -7,7 +7,7 @@
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]
 
-RALPH_VERSION="2026.03.23.2310"
+RALPH_VERSION="2026.03.24.0015"
 
 set -e
 
@@ -15,6 +15,7 @@ set -e
 
 MILESTONE=""
 MAX_ITERATIONS=10
+VERBOSE=false
 TOOL_COMMAND="claude"
 TOOL_ARGS="--dangerously-skip-permissions --print"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,6 +25,7 @@ PROGRESS_FILE="$WORKING_PATH/progress.txt"
 while [[ $# -gt 0 ]]; do
   case $1 in
     --version)     echo "Ralph v$RALPH_VERSION"; exit 0 ;;
+    --verbose|-v)  VERBOSE=true;           shift   ;;
     --milestone)   MILESTONE="$2";        shift 2 ;;
     --milestone=*) MILESTONE="${1#*=}";    shift   ;;
     *)
@@ -135,12 +137,14 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   echo "==============================================================="
 
   # Pick the oldest ralph:todo issue in this milestone
+  $VERBOSE && echo "  Querying: gh issue list --milestone '$MILESTONE' --label 'ralph:todo' --sort created --limit 1"
   ISSUE_JSON=$(gh issue list \
     --milestone "$MILESTONE" \
     --label "ralph:todo" \
     --sort created \
     --json number,title,body \
     --limit 1 2>/dev/null || echo "[]")
+  $VERBOSE && echo "  Result: $ISSUE_JSON"
 
   ISSUE_NUMBER=$(echo "$ISSUE_JSON" | jq -r '.[0].number // empty')
 
@@ -171,6 +175,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   echo "Working on: #$ISSUE_NUMBER - $ISSUE_TITLE"
 
   # Mark as in-progress so other instances don't pick it up
+  $VERBOSE && echo "  Labeling #$ISSUE_NUMBER as ralph:in-progress"
   gh issue edit "$ISSUE_NUMBER" --remove-label "ralph:todo" --add-label "ralph:in-progress" 2>/dev/null || true
 
   # Build prompt: ralph.md instructions + issue context (use temp file to avoid shell escaping issues)
@@ -191,10 +196,16 @@ $ISSUE_BODY
 ISSUE_EOF
 
   # Spawn a fresh Claude Code instance for this issue
+  $VERBOSE && echo "  Prompt: $PROMPT_FILE"
+  $VERBOSE && echo "  Spawning: $TOOL_COMMAND $TOOL_ARGS < $PROMPT_FILE"
   OUTPUT=$($TOOL_COMMAND $TOOL_ARGS < "$PROMPT_FILE" 2>&1 | tee /dev/stderr) || true
   rm -f "$PROMPT_FILE"
 
-  echo "Iteration $i complete. Continuing..."
+  # Status summary
+  REMAINING=$(gh issue list --milestone "$MILESTONE" --label "ralph:todo" --json number --jq 'length' 2>/dev/null || echo "?")
+  DONE_NOW=$(gh issue list --milestone "$MILESTONE" --label "ralph:done" --json number --jq 'length' 2>/dev/null || echo "?")
+  FAILED_NOW=$(gh issue list --milestone "$MILESTONE" --label "ralph:failed" --json number --jq 'length' 2>/dev/null || echo "?")
+  echo "Iteration $i complete — Done: $DONE_NOW | Todo: $REMAINING | Failed: $FAILED_NOW"
   sleep 2
 done
 
