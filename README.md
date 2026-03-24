@@ -59,7 +59,9 @@ The following skill will be available after installation:
 
 - `/ralph-github` - Plan a feature and create GitHub Issues for autonomous execution
 
-Automatically invoked when you ask your agent to: "create a prd", "plan this feature", "write stories for", "spec out".
+EXCEPT THAT IT WON'T BE AVAIALBLE because there's some kind of bug in Claude Code that stops the `/ralph-github` command from working. Instead you can invoke it when you ask your agent to: "create a prd", "plan this feature", "write stories for", "spec out".
+
+Look, don't blame me.
 
 ## Workflow
 
