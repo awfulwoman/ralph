@@ -7,7 +7,7 @@
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [max_iterations]
 
-RALPH_VERSION="2026.03.24.1131"
+RALPH_VERSION="2026.03.24.1135"
 
 set -e
 
@@ -108,11 +108,26 @@ finalize() {
     PR_DRAFT="--draft"
   fi
 
+  # Fetch milestone description for PR body
+  local MILESTONE_DESC
+  MILESTONE_DESC=$(gh api repos/{owner}/{repo}/milestones \
+    --jq ".[] | select(.title == \"$MILESTONE\") | .description" 2>/dev/null || true)
+
+  local PR_BODY
+  PR_BODY=$(cat <<PRBODY
+## Milestone: $MILESTONE
+
+${MILESTONE_DESC:-_No milestone description._}
+
+## Status: $STATUS
+PRBODY
+)
+
   # Create PR if one doesn't already exist for this branch
   EXISTING_PR=$(gh pr list --head "$BRANCH" --state all --json number --jq '.[0].number' 2>/dev/null || true)
   if [[ -n "$EXISTING_PR" ]]; then
     echo "PR #$EXISTING_PR already exists for $BRANCH"
-    gh pr edit "$EXISTING_PR" --title "$PR_TITLE" 2>/dev/null || true
+    gh pr edit "$EXISTING_PR" --title "$PR_TITLE" --body "$PR_BODY" 2>/dev/null || true
     if [[ "$STATUS" == "complete" ]]; then
       gh pr ready "$EXISTING_PR" 2>/dev/null || true
     fi
@@ -121,9 +136,7 @@ finalize() {
     echo "Creating pull request..."
     PR_URL=$(gh pr create \
       --title "$PR_TITLE" \
-      --body "Automated PR from Ralph for milestone **$MILESTONE**.
-
-## Status: $STATUS" \
+      --body "$PR_BODY" \
       --head "$BRANCH" $PR_DRAFT 2>&1)
   fi
 
