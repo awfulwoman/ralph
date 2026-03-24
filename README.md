@@ -119,19 +119,6 @@ Ralph uses these labels (auto-created on first run):
 | `skills/ralph/`    | Skill for planning features and creating GitHub Issues |
 | `progress.txt`     | Append-only learnings for future iterations            |
 | `.claude-plugin/`  | Plugin manifest for Claude Code marketplace            |
-| `flowchart/`       | Interactive visualization of how Ralph works           |
-
-## Flowchart
-
-[![Ralph Flowchart](assets/ralph-flowchart.png)](https://awfulwoman.github.io/ralph/)
-
-**[View Interactive Flowchart](https://awfulwoman.github.io/ralph/)** - Click through to see each step with animations.
-
-```bash
-cd flowchart
-npm install
-npm run dev
-```
 
 ## Critical Concepts
 
@@ -193,9 +180,9 @@ git log --oneline -10
 gh issue view <number> --comments
 ```
 
-## Customizing the Prompt
+## Customising the Prompt
 
-After copying `scripts/ralph.md` to your project, customize it:
+After copying `scripts/ralph.md` to your project, customise it:
 
 - Add project-specific quality check commands
 - Include codebase conventions

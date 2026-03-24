@@ -7,12 +7,6 @@ Ralph is an autonomous AI agent loop that runs an agent repeatedly until all Git
 ## Commands
 
 ```bash
-# Run the flowchart dev server
-cd flowchart && npm run dev
-
-# Build the flowchart
-cd flowchart && npm run build
-
 # Run Ralph
 ./scripts/ralph.sh --milestone <name> [max_iterations]
 ```
@@ -23,7 +17,6 @@ cd flowchart && npm run build
 - `scripts/ralph.md` - Instructions given to each agent instance
 - `CLAUDE.md` - Project-level instructions
 - `skills/ralph/SKILL.md` - Skill for planning features and creating GitHub Issues
-- `flowchart/` - Interactive React Flow diagram explaining how Ralph works
 
 ## How It Works
 
@@ -38,18 +31,6 @@ cd flowchart && npm run build
 - `ralph:in-progress` — agent is working on it
 - `ralph:done` — story completed
 - `ralph:failed` — story failed
-
-## Flowchart
-
-The `flowchart/` directory contains an interactive visualization built with React Flow. It's designed for presentations - click through to reveal each step with animations.
-
-To run locally:
-
-```bash
-cd flowchart
-npm install
-npm run dev
-```
 
 ## Versioning
 
