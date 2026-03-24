@@ -4,16 +4,25 @@ You are an autonomous coding agent working on a software project.
 
 ## Your Task
 
-You have been assigned a single GitHub issue. The issue details are at the bottom of this prompt under "Current Issue".
+You have been given a list of available GitHub issues under "Available Issues" at the bottom of this prompt. You must choose which one to work on.
 
-1. Read the issue title, body, and acceptance criteria
+1. Review all available todo issues and the list of completed issues
 2. Read `scripts/progress.txt` if it exists (check Codebase Patterns section first)
-3. Ensure you're on the correct branch (specified in the issue context)
-4. Implement the story described in the issue
-5. Run quality checks (e.g., typecheck, lint, test — use whatever your project requires)
-6. If checks pass, commit ALL changes with message: `feat: #<issue-number> - <issue title>\n\nCloses #<issue-number>`
-7. Mark the issue as done and post a progress comment (see below)
-8. Append your progress to `scripts/progress.txt`
+3. **Choose the best issue to work on next** — consider dependencies between issues (e.g., if issue B builds on issue A, do A first), logical ordering, and what's already been completed
+4. Claim the issue by labeling it `ralph:in-progress` (see below)
+5. Ensure you're on the correct branch (specified in the issue context)
+6. Implement the story described in the issue
+7. Run quality checks (e.g., typecheck, lint, test — use whatever your project requires)
+8. If checks pass, commit ALL changes with message: `feat: #<issue-number> - <issue title>\n\nCloses #<issue-number>`
+9. Mark the issue as done and post a progress comment (see below)
+10. Append your progress to `scripts/progress.txt`
+
+## Claiming an Issue
+
+Before starting work, claim the issue you chose:
+```bash
+gh issue edit <number> --remove-label "ralph:todo" --add-label "ralph:in-progress"
+```
 
 ## On Success
 
@@ -100,7 +109,7 @@ A frontend story is NOT complete until browser verification passes.
 
 ## Important
 
-- Work on ONE story per iteration (the one assigned to you below)
+- Work on ONE story per iteration (choose the best one from the available issues)
 - Commit frequently
 - Keep CI green
 - Read the Codebase Patterns section in scripts/progress.txt before starting

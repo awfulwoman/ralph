@@ -2,12 +2,12 @@
 # Ralph — autonomous AI agent loop
 # Version: 2026.03.23.2248
 #
-# Picks the oldest ralph:todo issue in a milestone, spawns a fresh
-# agent instance to implement it, then repeats until done.
+# Passes all ralph:todo issues to a fresh agent instance, which chooses
+# the best one to work on. Repeats until all issues are done.
 #
 # Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>]
 
-RALPH_VERSION="2026.03.24.1219"
+RALPH_VERSION="2026.03.24.1952"
 
 set -e
 
@@ -200,19 +200,19 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   echo "  Ralph Iteration $i of $MAX_ITERATIONS"
   echo "==============================================================="
 
-  # Pick the oldest ralph:todo issue in this milestone
-  $VERBOSE && echo "  Querying: gh issue list --milestone '$MILESTONE' --label 'ralph:todo' --limit 1"
-  ISSUE_JSON=$(gh issue list \
+  # Fetch all ralph:todo issues in this milestone
+  $VERBOSE && echo "  Querying: gh issue list --milestone '$MILESTONE' --label 'ralph:todo'"
+  TODO_JSON=$(gh issue list \
     --milestone "$MILESTONE" \
     --label "ralph:todo" \
     --json number,title,body \
-    --limit 1 2>/dev/null || echo "[]")
-  $VERBOSE && echo "  Result: $ISSUE_JSON"
+    2>/dev/null || echo "[]")
+  $VERBOSE && echo "  Result: $TODO_JSON"
 
-  ISSUE_NUMBER=$(echo "$ISSUE_JSON" | jq -r '.[0].number // empty')
+  TODO_COUNT=$(echo "$TODO_JSON" | jq 'length')
 
   # Nothing to do — either we're done, or stuck issues need a retry
-  if [[ -z "$ISSUE_NUMBER" ]]; then
+  if [[ "$TODO_COUNT" -eq 0 ]]; then
     IN_PROGRESS=$(gh issue list \
       --milestone "$MILESTONE" \
       --label "ralph:in-progress" \
@@ -233,16 +233,16 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     exit 0
   fi
 
-  ISSUE_TITLE=$(echo "$ISSUE_JSON" | jq -r '.[0].title')
-  ISSUE_BODY=$(echo "$ISSUE_JSON"  | jq -r '.[0].body')
+  echo "$TODO_COUNT ralph:todo issue(s) remaining — agent will choose which to work on"
 
-  echo "Working on: #$ISSUE_NUMBER - $ISSUE_TITLE"
+  # Also fetch done issues for context
+  DONE_JSON=$(gh issue list \
+    --milestone "$MILESTONE" \
+    --label "ralph:done" \
+    --json number,title \
+    2>/dev/null || echo "[]")
 
-  # Mark as in-progress so other instances don't pick it up
-  $VERBOSE && echo "  Labeling #$ISSUE_NUMBER as ralph:in-progress"
-  gh issue edit "$ISSUE_NUMBER" --remove-label "ralph:todo" --add-label "ralph:in-progress" 2>/dev/null || true
-
-  # Build prompt: ralph.md instructions + issue context (use temp file to avoid shell escaping issues)
+  # Build prompt: ralph.md instructions + all todo issues (agent picks one)
   PROMPT_FILE=$(mktemp)
   trap "rm -f '$PROMPT_FILE'" EXIT
   cat "$SCRIPT_DIR/ralph.md" > "$PROMPT_FILE"
@@ -250,13 +250,16 @@ for i in $(seq 1 $MAX_ITERATIONS); do
 
 ---
 
-## Current Issue
+## Available Issues
 
-**Issue:** #$ISSUE_NUMBER - $ISSUE_TITLE
 **Branch:** $BRANCH
 **Milestone:** $MILESTONE
 
-$ISSUE_BODY
+### Completed Issues
+$(echo "$DONE_JSON" | jq -r '.[] | "- [x] #\(.number) \(.title)"' 2>/dev/null || echo "_None yet._")
+
+### Todo Issues (pick one)
+$(echo "$TODO_JSON" | jq -r '.[] | "---\n#### #\(.number) \(.title)\n\(.body)\n"')
 ISSUE_EOF
 
   # Spawn a fresh Claude Code instance for this issue
