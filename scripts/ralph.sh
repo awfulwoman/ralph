@@ -5,9 +5,9 @@
 # Passes all ralph:todo issues to a fresh agent instance, which chooses
 # the best one to work on. Repeats until all issues are done.
 #
-# Usage: ./scripts/ralph.sh [--milestone <name>] [--iterations <n>] [--author <login>]
+# Usage: ./scripts/ralph.sh [--milestone <name>] [--iterations <n>]
 
-RALPH_VERSION="2026.03.29.2350"
+RALPH_VERSION="2026.03.29.2353"
 
 set -e
 
@@ -18,7 +18,6 @@ MAX_ITERATIONS=10
 MODEL="claude-sonnet-4-6"
 VERBOSE=false
 TOOL_COMMAND="claude"
-AUTHOR="@me"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKING_PATH="$(pwd)"
 PROGRESS_FILE="$SCRIPT_DIR/progress.txt"
@@ -33,8 +32,6 @@ while [[ $# -gt 0 ]]; do
     --iterations=*) MAX_ITERATIONS="${1#*=}"; shift   ;;
     --model)       MODEL="$2";              shift 2 ;;
     --model=*)     MODEL="${1#*=}";         shift   ;;
-    --author)      AUTHOR="$2";            shift 2 ;;
-    --author=*)    AUTHOR="${1#*=}";       shift   ;;
     *)             shift ;;
   esac
 done
@@ -51,6 +48,30 @@ if ! gh repo view --json name &> /dev/null; then
   exit 1
 fi
 
+# ── Repo owner detection ─────────────────────────────────────────
+# Returns a JSON array of logins with admin/owner access.
+
+get_repo_owners() {
+  local owners
+  owners=$(gh api repos/{owner}/{repo}/collaborators \
+    --jq '[.[] | select(.permissions.admin == true) | .login]' 2>/dev/null || echo "")
+  if [[ -n "$owners" && "$owners" != "[]" ]]; then
+    echo "$owners"
+    return
+  fi
+  # Fallback: repo owner login (works without admin API access)
+  local repo_owner
+  repo_owner=$(gh api repos/{owner}/{repo} --jq '.owner.login' 2>/dev/null || echo "")
+  [[ -n "$repo_owner" ]] && echo "[\"$repo_owner\"]" || echo "[]"
+}
+
+OWNERS_JSON=$(get_repo_owners)
+if [[ -z "$OWNERS_JSON" || "$OWNERS_JSON" == "[]" ]]; then
+  echo "Error: Could not determine repo owners."
+  exit 1
+fi
+echo "Repo owners: $(echo "$OWNERS_JSON" | jq -r 'join(", ")')"
+
 # ── Helper: find oldest incomplete milestone ─────────────────────
 # Returns the title of the oldest open milestone that has ralph:todo issues.
 
@@ -60,8 +81,10 @@ find_oldest_milestone() {
   | while IFS= read -r ms; do
       [[ -z "$ms" ]] && continue
       local count
-      count=$(gh issue list --milestone "$ms" --label "ralph:todo" --author "$AUTHOR" \
-        --json number --jq 'length' 2>/dev/null || echo "0")
+      count=$(gh issue list --milestone "$ms" --label "ralph:todo" \
+        --json number,author 2>/dev/null \
+        | jq --argjson owners "$OWNERS_JSON" \
+          '[.[] | select(.author.login as $l | any($owners[]; . == $l))] | length')
       if [[ "$count" -gt 0 ]]; then
         echo "$ms"
         return
@@ -204,7 +227,11 @@ echo ""
 echo "Milestone: $MILESTONE"
 echo "---------------------------------------------------------------"
 
-TODO_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:todo" --author "$AUTHOR" --json number,title --jq '.[] | "  [ ] #\(.number) \(.title)"' 2>/dev/null || true)
+TODO_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:todo" \
+  --json number,title,author 2>/dev/null \
+  | jq -r --argjson owners "$OWNERS_JSON" \
+    '.[] | select(.author.login as $l | any($owners[]; . == $l)) | "  [ ] #\(.number) \(.title)"' \
+  || true)
 DONE_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:done" --json number,title --jq '.[] | "  [x] #\(.number) \(.title)"' 2>/dev/null || true)
 IN_PROGRESS_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:in-progress" --json number,title --jq '.[] | "  [~] #\(.number) \(.title)"' 2>/dev/null || true)
 FAILED_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:failed" --json number,title --jq '.[] | "  [!] #\(.number) \(.title)"' 2>/dev/null || true)
@@ -234,7 +261,7 @@ echo "  Branch:     $BRANCH"
 echo "  Milestone:  $MILESTONE"
 echo "  Model:      $MODEL"
 echo "  Iterations: $MAX_ITERATIONS"
-echo "  Author:     $AUTHOR"
+echo "  Owners:     $(echo "$OWNERS_JSON" | jq -r 'join(", ")')"
 echo "==============================================================="
 
 for i in $(seq 1 $MAX_ITERATIONS); do
@@ -243,14 +270,16 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   echo "  Ralph Iteration $i of $MAX_ITERATIONS"
   echo "==============================================================="
 
-  # Fetch all ralph:todo issues in this milestone
-  $VERBOSE && echo "  Querying: gh issue list --milestone '$MILESTONE' --label 'ralph:todo' --author '$AUTHOR'"
+  # Fetch all ralph:todo issues in this milestone authored by repo owners
+  $VERBOSE && echo "  Querying: gh issue list --milestone '$MILESTONE' --label 'ralph:todo' (filtered to owners)"
   TODO_JSON=$(gh issue list \
     --milestone "$MILESTONE" \
     --label "ralph:todo" \
-    --author "$AUTHOR" \
-    --json number,title,body \
-    2>/dev/null || echo "[]")
+    --json number,title,body,author \
+    2>/dev/null \
+    | jq --argjson owners "$OWNERS_JSON" \
+      '[.[] | select(.author.login as $l | any($owners[]; . == $l))]' \
+    || echo "[]")
   $VERBOSE && echo "  Result: $TODO_JSON"
 
   TODO_COUNT=$(echo "$TODO_JSON" | jq 'length')
@@ -324,7 +353,11 @@ ISSUE_EOF
   rm -f "$PROMPT_FILE"
 
   # Status summary
-  REMAINING=$(gh issue list --milestone "$MILESTONE" --label "ralph:todo" --author "$AUTHOR" --json number --jq 'length' 2>/dev/null || echo "?")
+  REMAINING=$(gh issue list --milestone "$MILESTONE" --label "ralph:todo" \
+    --json number,author 2>/dev/null \
+    | jq --argjson owners "$OWNERS_JSON" \
+      '[.[] | select(.author.login as $l | any($owners[]; . == $l))] | length' \
+    || echo "?")
   DONE_NOW=$(gh issue list --milestone "$MILESTONE" --label "ralph:done" --json number --jq 'length' 2>/dev/null || echo "?")
   FAILED_NOW=$(gh issue list --milestone "$MILESTONE" --label "ralph:failed" --json number --jq 'length' 2>/dev/null || echo "?")
   echo "Iteration $i complete — Done: $DONE_NOW | Todo: $REMAINING | Failed: $FAILED_NOW"
