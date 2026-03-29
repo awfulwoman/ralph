@@ -5,9 +5,9 @@
 # Passes all ralph:todo issues to a fresh agent instance, which chooses
 # the best one to work on. Repeats until all issues are done.
 #
-# Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>] [--author <login>]
+# Usage: ./scripts/ralph.sh [--milestone <name>] [--iterations <n>] [--author <login>]
 
-RALPH_VERSION="2026.03.29.2347"
+RALPH_VERSION="2026.03.29.2350"
 
 set -e
 
@@ -39,12 +39,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$MILESTONE" ]]; then
-  echo "Error: --milestone <name> is required."
-  echo "Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>] [--author <login>]"
-  exit 1
-fi
-
 # ── Preflight checks ────────────────────────────────────────────
 
 if ! command -v gh &> /dev/null; then
@@ -55,6 +49,52 @@ fi
 if ! gh repo view --json name &> /dev/null; then
   echo "Error: Not in a GitHub repository or not authenticated with gh."
   exit 1
+fi
+
+# ── Helper: find oldest incomplete milestone ─────────────────────
+# Returns the title of the oldest open milestone that has ralph:todo issues.
+
+find_oldest_milestone() {
+  gh api repos/{owner}/{repo}/milestones \
+    --jq 'sort_by(.created_at) | .[].title' 2>/dev/null \
+  | while IFS= read -r ms; do
+      [[ -z "$ms" ]] && continue
+      local count
+      count=$(gh issue list --milestone "$ms" --label "ralph:todo" --author "$AUTHOR" \
+        --json number --jq 'length' 2>/dev/null || echo "0")
+      if [[ "$count" -gt 0 ]]; then
+        echo "$ms"
+        return
+      fi
+    done
+}
+
+# ── Helper: checkout or create milestone branch ──────────────────
+
+switch_branch() {
+  BRANCH="ralph/$(echo "$MILESTONE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
+  local current
+  current=$(git branch --show-current)
+  if [[ "$current" == "$BRANCH" ]]; then return; fi
+  if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+    echo "Checking out existing branch: $BRANCH"
+    git checkout "$BRANCH"
+  else
+    echo "Creating new branch: $BRANCH"
+    git checkout -b "$BRANCH" main
+  fi
+}
+
+# ── Auto-discover milestone if not specified ─────────────────────
+
+if [[ -z "$MILESTONE" ]]; then
+  echo "No --milestone specified. Searching for oldest incomplete milestone..."
+  MILESTONE=$(find_oldest_milestone)
+  if [[ -z "$MILESTONE" ]]; then
+    echo "Error: No incomplete milestones with ralph:todo issues found."
+    exit 1
+  fi
+  echo "Found: $MILESTONE"
 fi
 
 # ── Create labels (idempotent) ───────────────────────────────────
@@ -78,18 +118,8 @@ fi
 # ── Set up branch ────────────────────────────────────────────────
 # Branch name derived from milestone: "My Feature" → "ralph/my-feature"
 
-BRANCH="ralph/$(echo "$MILESTONE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
-CURRENT_BRANCH=$(git branch --show-current)
-
-if [[ "$CURRENT_BRANCH" != "$BRANCH" ]]; then
-  if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
-    echo "Checking out existing branch: $BRANCH"
-    git checkout "$BRANCH"
-  else
-    echo "Creating new branch: $BRANCH"
-    git checkout -b "$BRANCH" main
-  fi
-fi
+BRANCH=""
+switch_branch
 
 # ── Finalize: push, create PR, switch back to main ──────────────
 
@@ -242,9 +272,19 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     fi
 
     echo ""
-    echo "Ralph completed all tasks! No remaining ralph:todo issues."
+    echo "Ralph completed all tasks for milestone: $MILESTONE"
     finalize "complete"
-    exit 0
+
+    # Try next oldest incomplete milestone
+    NEXT=$(find_oldest_milestone)
+    if [[ -z "$NEXT" ]]; then
+      echo "No more incomplete milestones. All done!"
+      exit 0
+    fi
+    echo "Switching to next milestone: $NEXT"
+    MILESTONE="$NEXT"
+    switch_branch
+    continue
   fi
 
   echo "$TODO_COUNT ralph:todo issue(s) remaining — agent will choose which to work on"
