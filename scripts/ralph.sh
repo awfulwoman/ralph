@@ -5,9 +5,9 @@
 # Passes all ralph:todo issues to a fresh agent instance, which chooses
 # the best one to work on. Repeats until all issues are done.
 #
-# Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>]
+# Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>] [--author <login>]
 
-RALPH_VERSION="2026.03.24.1418"
+RALPH_VERSION="2026.03.29.2347"
 
 set -e
 
@@ -18,6 +18,7 @@ MAX_ITERATIONS=10
 MODEL="claude-sonnet-4-6"
 VERBOSE=false
 TOOL_COMMAND="claude"
+AUTHOR="@me"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKING_PATH="$(pwd)"
 PROGRESS_FILE="$SCRIPT_DIR/progress.txt"
@@ -32,13 +33,15 @@ while [[ $# -gt 0 ]]; do
     --iterations=*) MAX_ITERATIONS="${1#*=}"; shift   ;;
     --model)       MODEL="$2";              shift 2 ;;
     --model=*)     MODEL="${1#*=}";         shift   ;;
+    --author)      AUTHOR="$2";            shift 2 ;;
+    --author=*)    AUTHOR="${1#*=}";       shift   ;;
     *)             shift ;;
   esac
 done
 
 if [[ -z "$MILESTONE" ]]; then
   echo "Error: --milestone <name> is required."
-  echo "Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>]"
+  echo "Usage: ./scripts/ralph.sh --milestone <name> [--iterations <n>] [--author <login>]"
   exit 1
 fi
 
@@ -171,7 +174,7 @@ echo ""
 echo "Milestone: $MILESTONE"
 echo "---------------------------------------------------------------"
 
-TODO_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:todo" --json number,title --jq '.[] | "  [ ] #\(.number) \(.title)"' 2>/dev/null || true)
+TODO_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:todo" --author "$AUTHOR" --json number,title --jq '.[] | "  [ ] #\(.number) \(.title)"' 2>/dev/null || true)
 DONE_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:done" --json number,title --jq '.[] | "  [x] #\(.number) \(.title)"' 2>/dev/null || true)
 IN_PROGRESS_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:in-progress" --json number,title --jq '.[] | "  [~] #\(.number) \(.title)"' 2>/dev/null || true)
 FAILED_ISSUES=$(gh issue list --milestone "$MILESTONE" --label "ralph:failed" --json number,title --jq '.[] | "  [!] #\(.number) \(.title)"' 2>/dev/null || true)
@@ -194,7 +197,15 @@ echo ""
 # ── Main loop ────────────────────────────────────────────────────
 
 REPO_URL=$(gh repo view --json url --jq '.url' 2>/dev/null || echo "unknown")
-echo "Starting Ralph v$RALPH_VERSION - Repo: $REPO_URL - Branch: $BRANCH - Model: $MODEL - Max iterations: $MAX_ITERATIONS"
+echo "==============================================================="
+echo "  Ralph v$RALPH_VERSION"
+echo "  Repo:       $REPO_URL"
+echo "  Branch:     $BRANCH"
+echo "  Milestone:  $MILESTONE"
+echo "  Model:      $MODEL"
+echo "  Iterations: $MAX_ITERATIONS"
+echo "  Author:     $AUTHOR"
+echo "==============================================================="
 
 for i in $(seq 1 $MAX_ITERATIONS); do
   echo ""
@@ -203,10 +214,11 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   echo "==============================================================="
 
   # Fetch all ralph:todo issues in this milestone
-  $VERBOSE && echo "  Querying: gh issue list --milestone '$MILESTONE' --label 'ralph:todo'"
+  $VERBOSE && echo "  Querying: gh issue list --milestone '$MILESTONE' --label 'ralph:todo' --author '$AUTHOR'"
   TODO_JSON=$(gh issue list \
     --milestone "$MILESTONE" \
     --label "ralph:todo" \
+    --author "$AUTHOR" \
     --json number,title,body \
     2>/dev/null || echo "[]")
   $VERBOSE && echo "  Result: $TODO_JSON"
@@ -272,7 +284,7 @@ ISSUE_EOF
   rm -f "$PROMPT_FILE"
 
   # Status summary
-  REMAINING=$(gh issue list --milestone "$MILESTONE" --label "ralph:todo" --json number --jq 'length' 2>/dev/null || echo "?")
+  REMAINING=$(gh issue list --milestone "$MILESTONE" --label "ralph:todo" --author "$AUTHOR" --json number --jq 'length' 2>/dev/null || echo "?")
   DONE_NOW=$(gh issue list --milestone "$MILESTONE" --label "ralph:done" --json number --jq 'length' 2>/dev/null || echo "?")
   FAILED_NOW=$(gh issue list --milestone "$MILESTONE" --label "ralph:failed" --json number --jq 'length' 2>/dev/null || echo "?")
   echo "Iteration $i complete — Done: $DONE_NOW | Todo: $REMAINING | Failed: $FAILED_NOW"
