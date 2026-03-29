@@ -56,6 +56,21 @@ This lets users respond with "1A, 2C, 3B" for quick iteration. Remember to inden
 
 ---
 
+## Step 1.5: Delegate PRD Generation to Specialist Agent
+
+After receiving the user's answers, spawn a specialist agent using the Agent tool with `model: "opus"` to produce the PRD and stories. Pass it:
+- The original feature description
+- All clarifying Q&A
+- The full content of this skill (story sizing rules, ordering rules, acceptance criteria rules, example)
+
+The specialist agent should return:
+- Milestone title and description
+- Ordered list of stories with titles, user story sentences, and acceptance criteria
+
+Use its output verbatim for Step 3. Do not redesign or re-summarize the stories yourself.
+
+---
+
 ## Step 2: Story Design
 
 Design user stories following these rules.
