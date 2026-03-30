@@ -167,23 +167,23 @@ gh label create "ralph:failed" --color "D93F0B" --description "Story failed" --f
 
 For each story, create an issue. **Creation order matters** — Ralph picks the oldest `ralph:todo` issue first.
 
+**Important:** Always write the issue body to a temp file and use `--body-file` instead of `--body`. This avoids Claude Code permission warnings about quoted newlines with `#`-prefixed lines.
+
 ```bash
-gh issue create \
-  --title "<Story title>" \
-  --body "<issue body>" \
-  --milestone "<feature-name>" \
-  --label "ralph:todo"
-```
-
-### Issue body format
-
-```markdown
+cat > /tmp/issue-body.md << 'ISSUE_EOF'
 As a [user], I want [feature] so that [benefit].
 
 ## Acceptance Criteria
 - [ ] Specific verifiable criterion
 - [ ] Another criterion
 - [ ] Typecheck passes
+ISSUE_EOF
+
+gh issue create \
+  --title "<Story title>" \
+  --body-file /tmp/issue-body.md \
+  --milestone "<feature-name>" \
+  --label "ralph:todo"
 ```
 
 Keep it simple. The title is the story name. The body is the description + checklist. GitHub's issue number is the ID.
