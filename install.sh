@@ -5,9 +5,22 @@
 
 set -e
 
-BASE_URL="https://raw.githubusercontent.com/awfulwoman/ralph/main"
+REPO="awfulwoman/ralph"
 
 echo "Installing Ralph..."
+
+# Fetch latest release tag
+LATEST=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" \
+  | grep '"tag_name"' | head -1 | sed 's/.*"tag_name":[[:space:]]*"\(.*\)".*/\1/')
+
+if [[ -z "$LATEST" ]]; then
+  echo "Error: Could not determine latest release from GitHub."
+  exit 1
+fi
+
+echo "Latest release: $LATEST"
+
+BASE_URL="https://raw.githubusercontent.com/$REPO/$LATEST"
 
 mkdir -p scripts
 curl -fsSL "$BASE_URL/scripts/ralph.sh" -o scripts/ralph.sh
