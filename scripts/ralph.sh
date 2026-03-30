@@ -7,7 +7,7 @@
 #
 # Usage: ./scripts/ralph.sh [--milestone <name>] [--iterations <n>]
 
-RALPH_VERSION="2026.03.30.0011"
+RALPH_VERSION="2026.03.30.1320"
 
 set -e
 
@@ -303,17 +303,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     echo ""
     echo "Ralph completed all tasks for milestone: $MILESTONE"
     finalize "complete"
-
-    # Try next oldest incomplete milestone
-    NEXT=$(find_oldest_milestone)
-    if [[ -z "$NEXT" ]]; then
-      echo "No more incomplete milestones. All done!"
-      exit 0
-    fi
-    echo "Switching to next milestone: $NEXT"
-    MILESTONE="$NEXT"
-    switch_branch
-    continue
+    exit 0
   fi
 
   echo "$TODO_COUNT ralph:todo issue(s) remaining — agent will choose which to work on"
