@@ -10,4 +10,4 @@ progress.txt
 .DS_Store
 
 #Claude
-.claude/
+.claude/settings.local.json
