@@ -32,10 +32,6 @@ Ralph is an autonomous AI agent loop that runs an agent repeatedly until all Git
 - `ralph:done` — story completed
 - `ralph:failed` — story failed
 
-## Versioning
-
-When modifying `scripts/ralph.sh`, always update the `RALPH_VERSION` variable (near the top of the file) to the current date/time in `YYYY.MM.DD.HHMM` format using the Europe/Berlin timezone. You MUST run `TZ='Europe/Berlin' date '+%Y.%m.%d.%H%M'` to get the actual time — never guess or make up the value.
-
 ## Patterns
 
 - Each iteration spawns a fresh agent instance with clean context
