@@ -1,14 +1,14 @@
-# Ralph + GitHub Issues
+# Ralph for Claude Code and GitHub
 
 ![Ralph](assets/ralph.png)
 
-Ralph is an autonomous AI agent loop that runs AI coding tools repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context. Memory persists via git history and GitHub issue comments.
+Ralph is an autonomous [Claude Code](https://docs.anthropic.com/en/docs/claude-code) agent loop that runs Claude repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context. Memory persists via git history and GitHub issue comments.
 
 Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 ## Prerequisites
 
-- A CLI agent, such as [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - [GitHub CLI](https://cli.github.com) (`gh`) installed and authenticated
 - A git repository with a GitHub remote
 
@@ -44,17 +44,10 @@ cp scripts/ralph.md yourproject/scripts/ralph.md
 <details>
 <summary>Or install skills manually</summary>
 
-For Claude:
-
 ```bash
 cp -r skills/ralph ~/.claude/skills/
 ```
 
-For other agents:
-
-```bash
-cp -r skills/ralph ~/<where your agent skills live>
-```
 </details>
 
 ## Skills
