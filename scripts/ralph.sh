@@ -75,7 +75,8 @@ echo "Repo owners: $(echo "$OWNERS_JSON" | jq -r 'join(", ")')"
 
 find_oldest_milestone() {
   gh api repos/{owner}/{repo}/milestones \
-    --jq 'sort_by(.created_at) | .[].title' 2>/dev/null \
+    --paginate --jq '.[] | .created_at + "\t" + .title' 2>/dev/null \
+  | sort | cut -f2- \
   | while IFS= read -r ms; do
       [[ -z "$ms" ]] && continue
       local count
@@ -129,7 +130,8 @@ gh label create "ralph:failed"      --color "D93F0B" --description "Story failed
 # ── Verify milestone exists ──────────────────────────────────────
 
 MILESTONE_COUNT=$(gh api repos/{owner}/{repo}/milestones \
-  --jq "[.[] | select(.title == \"$MILESTONE\")] | length" 2>/dev/null || echo "0")
+  --paginate --jq ".[] | select(.title == \"$MILESTONE\") | .number" 2>/dev/null \
+  | wc -l | tr -d ' ' || echo "0")
 
 if [[ "$MILESTONE_COUNT" -eq 0 ]]; then
   echo "Error: Milestone '$MILESTONE' not found. Run /ralph-github first to create it."
@@ -170,7 +172,7 @@ finalize() {
   # Fetch milestone description for PR body
   local MILESTONE_DESC
   MILESTONE_DESC=$(gh api repos/{owner}/{repo}/milestones \
-    --jq ".[] | select(.title == \"$MILESTONE\") | .description" 2>/dev/null || true)
+    --paginate --jq ".[] | select(.title == \"$MILESTONE\") | .description" 2>/dev/null || true)
 
   local PR_BODY
   PR_BODY=$(cat <<PRBODY
