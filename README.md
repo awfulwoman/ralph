@@ -88,6 +88,7 @@ The skill will:
 ./scripts/ralph.sh                                           # auto-picks oldest incomplete milestone
 ./scripts/ralph.sh --model claude-opus-4-6                  # use a different model
 ./scripts/ralph.sh --verbose                                 # verbose output
+./scripts/ralph.sh --auto-merge                              # merge PR and pull to local main when complete
 ```
 
 If `--milestone` is omitted, Ralph finds the oldest open milestone that still has `ralph:todo` issues and runs that. This makes it easy to run multiple milestones in sequence.
