@@ -2,10 +2,20 @@
 # Install Ralph into the current project directory
 #
 # Usage: curl -fsSL https://raw.githubusercontent.com/awfulwoman/ralph/main/install.sh | bash
+#        curl -fsSL ... | bash -s -- --dir path/to/project
 
 set -e
 
 REPO="awfulwoman/ralph"
+INSTALL_DIR="./scripts"
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --dir)   INSTALL_DIR="$2"; shift 2 ;;
+    --dir=*) INSTALL_DIR="${1#*=}"; shift ;;
+    *) shift ;;
+  esac
+done
 
 echo "Installing Ralph..."
 
@@ -22,13 +32,13 @@ echo "Latest release: $LATEST"
 
 BASE_URL="https://raw.githubusercontent.com/$REPO/$LATEST"
 
-mkdir -p scripts
-curl -fsSL "$BASE_URL/scripts/ralph.sh" -o scripts/ralph.sh
-curl -fsSL "$BASE_URL/scripts/ralph.md" -o scripts/ralph.md
-chmod +x scripts/ralph.sh
+mkdir -p "$INSTALL_DIR"
+curl -fsSL "$BASE_URL/scripts/ralph.sh" -o "$INSTALL_DIR/ralph.sh"
+curl -fsSL "$BASE_URL/scripts/ralph.md" -o "$INSTALL_DIR/ralph.md"
+chmod +x "$INSTALL_DIR/ralph.sh"
 
-echo "Installed Ralph ${LATEST} to $(pwd)"
+echo "Installed Ralph ${LATEST} to $INSTALL_DIR"
 echo ""
 echo "Next steps:"
 echo "  1. Use /ralph-github to plan a feature and create GitHub Issues"
-echo "  2. Run: ./scripts/ralph.sh --milestone <name>"
+echo "  2. Run: $INSTALL_DIR/ralph.sh --milestone <name>"

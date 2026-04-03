@@ -2,7 +2,7 @@
 
 ![Ralph](assets/ralph.png)
 
-Ralph is an autonomous AI agent loop that runs AI coding tools repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `scripts/progress.txt`, and GitHub issue comments.
+Ralph is an autonomous AI agent loop that runs AI coding tools repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context. Memory persists via git history and GitHub issue comments.
 
 Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
@@ -18,6 +18,9 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/awfulwoman/ralph/main/install.sh | bash
+
+# Install into a specific directory (instead of ./scripts/)
+curl -fsSL https://raw.githubusercontent.com/awfulwoman/ralph/main/install.sh | bash -s -- --dir bin
 ```
 
 <details>
@@ -87,13 +90,18 @@ The skill will:
 ./scripts/ralph.sh --milestone <milestone-name>
 
 # Examples:
-./scripts/ralph.sh --milestone task-priority                # default 10 iterations
+./scripts/ralph.sh --milestone task-priority                 # default 10 iterations
 ./scripts/ralph.sh --milestone task-priority --iterations 20 # up to 20 iterations
+./scripts/ralph.sh                                           # auto-picks oldest incomplete milestone
+./scripts/ralph.sh --model claude-opus-4-6                  # use a different model
+./scripts/ralph.sh --verbose                                 # verbose output
 ```
+
+If `--milestone` is omitted, Ralph finds the oldest open milestone that still has `ralph:todo` issues and runs that. This makes it easy to run multiple milestones in sequence.
 
 Each iteration, Ralph will:
 
-1. Pick the oldest `ralph:todo` issue in the milestone
+1. Choose the best `ralph:todo` issue from the milestone to work on
 2. Spawn a fresh agent instance to implement it
 3. Run quality checks (typecheck, tests)
 4. Commit, mark the issue `ralph:done`, and move on
@@ -113,13 +121,12 @@ Ralph uses these labels (auto-created on first run):
 
 ## Key Files
 
-| File                   | Purpose                                                |
-|------------------------|--------------------------------------------------------|
-| `scripts/ralph.sh`     | Bash loop that picks issues and spawns agent instances |
-| `scripts/ralph.md`     | Prompt template given to each agent instance           |
-| `scripts/progress.txt` | Append-only learnings for future iterations            |
-| `skills/ralph/`        | Skill for planning features and creating GitHub Issues |
-| `.claude-plugin/`      | Plugin manifest for Claude Code marketplace            |
+| File               | Purpose                                                |
+|--------------------|--------------------------------------------------------|
+| `scripts/ralph.sh` | Bash loop that picks issues and spawns agent instances |
+| `scripts/ralph.md` | Prompt template given to each agent instance           |
+| `skills/ralph/`    | Skill for planning features and creating GitHub Issues |
+| `.claude-plugin/`  | Plugin manifest for Claude Code marketplace            |
 
 ## Critical Concepts
 
@@ -128,7 +135,6 @@ Ralph uses these labels (auto-created on first run):
 Each iteration spawns a **new agent instance** with clean context. The only memory between iterations is:
 
 - Git history (commits from previous iterations)
-- `scripts/progress.txt` (learnings and context)
 - GitHub issue comments (what each iteration did)
 - GitHub milestone (which stories are done via labels)
 
@@ -171,9 +177,6 @@ When no `ralph:todo` issues remain in the milestone, Ralph exits successfully.
 # See milestone progress
 gh issue list --milestone "<name>" --json number,title,labels --jq '.[] | {number, title, status: .labels[].name}'
 
-# See learnings from previous iterations
-cat scripts/progress.txt
-
 # Check git history
 git log --oneline -10
 
@@ -188,6 +191,19 @@ After copying `scripts/ralph.md` to your project, customise it:
 - Add project-specific quality check commands
 - Include codebase conventions
 - Add common gotchas for your stack
+
+## Development
+
+These commands are for maintaining the Ralph repository itself.
+
+### `/release`
+
+Bumps the plugin version, commits, and pushes. Increments the minor version by default, or accepts an explicit version:
+
+```plain
+/release          # e.g. 1.10.0 → 1.11.0
+/release 2.0.0    # explicit version
+```
 
 ## References
 
