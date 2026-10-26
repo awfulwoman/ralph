@@ -2,7 +2,12 @@
 
 ![Ralph](assets/ralph.png)
 
-Ralph is an autonomous [Claude Code](https://docs.anthropic.com/en/docs/claude-code) agent loop that runs Claude repeatedly until all GitHub Issues in a milestone are complete. Each iteration is a fresh instance with clean context. Memory persists via git history and GitHub issue comments.
+Ralph is an autonomous [Claude Code](https://docs.anthropic.com/en/docs/claude-code) agent loop that runs Claude repeatedly until a set of GitHub Issues is complete. Each iteration is a fresh instance with clean context. Memory persists via git history and GitHub issue comments.
+
+It has two modes:
+
+- **Parent mode** — works through the sub-issues of one parent issue, across any number of repos. State lives on a GitHub Project board (`Status` + `Agent-ready` fields). Agents commit straight to each repo's default branch.
+- **Milestone mode** — works through one milestone in the current repo. State lives in `ralph:*` labels. Work lands on a `ralph/<milestone>` branch and a PR.
 
 Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
@@ -28,8 +33,7 @@ curl -fsSL https://raw.githubusercontent.com/awfulwoman/ralph/main/install.sh | 
 
 ```bash
 mkdir -p yourproject/scripts
-cp scripts/ralph.sh yourproject/scripts/ralph.sh
-cp scripts/ralph.md yourproject/scripts/ralph.md
+cp scripts/ralph.sh scripts/ralph.md scripts/ralph-parent.sh scripts/ralph-parent.md yourproject/scripts/
 ```
 
 </details>
@@ -74,10 +78,32 @@ The skill will:
 
 1. Ask clarifying questions
 2. Break the feature into right-sized stories
-3. Create a GitHub milestone with goals/non-goals
-4. Create issues in dependency order with `ralph:todo` labels
+3. Parent mode: create a parent issue with goals/non-goals, then sub-issues in the repos they change, linked to the parent, on the board and set to Ready
+4. Milestone mode: create a milestone with goals/non-goals, then issues in dependency order with `ralph:todo` labels
 
-### 2. Run Ralph
+### 2a. Run Ralph — parent mode
+
+Needs a GitHub Project with a single-select `Status` field (with `Ready`, `In Progress` and `Blocked` options) and a single-select `Agent-ready` field (`Yes`/`No`). `gh` needs the `project` scope (`gh auth refresh -s project`).
+
+```bash
+./scripts/ralph.sh --parent <owner/repo#n | issue URL> --project <number>
+
+# Examples:
+./scripts/ralph.sh --parent awfulwoman/meta#15 --project 4
+./scripts/ralph.sh --parent awfulwoman/meta#15 --project 4 --dry-run          # show what it would do
+./scripts/ralph.sh --parent awfulwoman/meta#15 --project 4 --workspace ~/Code # repos live in ~/Code/<repo>
+./scripts/ralph.sh --parent acme/plans#7 --project 2 --project-owner acme-org
+```
+
+- **Eligible:** open sub-issues with Status `Ready` and Agent-ready `Yes`. Nothing else is touched, so a human controls what an agent may do.
+- **Workspace:** each sub-issue's repo is expected at `<workspace>/<repo>`; it is cloned there if missing. The default workspace is the parent of the current repo, or the current directory if it is not a repo. A repo with a dirty tree, or not on its default branch, is skipped.
+- **Each iteration:** the agent picks one sub-issue, sets it In Progress with a claim comment, implements it, runs the repo's checks, commits with `Fixes owner/repo#n`, and pushes. On failure it sets Blocked and says why. It never sets Done — that is for whoever verifies the deploy.
+- **Progress log:** `~/.local/state/ralph/<owner>-<repo>-<n>.md` (outside the repos).
+- **Field names** can be changed with `RALPH_STATUS_FIELD`, `RALPH_AGENT_FIELD`, `RALPH_READY`, `RALPH_IN_PROGRESS`, `RALPH_BLOCKED` and `RALPH_AGENT_YES`.
+
+Ralph stops when nothing is eligible (all closed, or the rest need a human) or max iterations is reached. When every sub-issue is closed it comments on the parent.
+
+### 2b. Run Ralph — milestone mode
 
 ```bash
 ./scripts/ralph.sh --milestone <milestone-name>
@@ -104,7 +130,7 @@ Ralph stops when all issues are done or max iterations is reached.
 
 ## Labels
 
-Ralph uses these labels (auto-created on first run):
+In milestone mode, Ralph uses these labels (auto-created on first run):
 
 | Label                | Color  | Meaning              |
 |----------------------|--------|----------------------|
@@ -117,8 +143,10 @@ Ralph uses these labels (auto-created on first run):
 
 | File               | Purpose                                                |
 |--------------------|--------------------------------------------------------|
-| `scripts/ralph.sh` | Bash loop that picks issues and spawns agent instances |
-| `scripts/ralph.md` | Prompt template given to each agent instance           |
+| `scripts/ralph.sh` | Bash loop that picks issues and spawns agent instances (milestone mode; hands `--parent` runs to `ralph-parent.sh`) |
+| `scripts/ralph.md` | Prompt template given to each agent instance (milestone mode) |
+| `scripts/ralph-parent.sh` | Parent-mode loop: sub-issues across repos, state on a Project board |
+| `scripts/ralph-parent.md` | Prompt template given to each agent instance (parent mode) |
 | `skills/ralph/`    | Skill for planning features and creating GitHub Issues |
 | `.claude-plugin/`  | Plugin manifest for Claude Code marketplace            |
 

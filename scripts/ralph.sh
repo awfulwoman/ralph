@@ -5,8 +5,17 @@
 # the best one to work on. Repeats until all issues are done.
 #
 # Usage: ./scripts/ralph.sh [--milestone <name>] [--iterations <n>] [--auto-merge]
+#        ./scripts/ralph.sh --parent <owner/repo#n> --project <n> [...]   (see ralph-parent.sh)
 
 set -e
+
+# ── Parent mode: sub-issues across repos, state on a project board ──
+
+for arg in "$@"; do
+  if [[ "$arg" == "--parent" || "$arg" == --parent=* ]]; then
+    exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ralph-parent.sh" "$@"
+  fi
+done
 
 # ── Parse arguments ──────────────────────────────────────────────
 

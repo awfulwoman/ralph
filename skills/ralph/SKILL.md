@@ -1,6 +1,6 @@
 ---
 name: ralph
-description: "Plan a feature and create GitHub Issues for Ralph autonomous execution. Use when planning a feature, starting a new project, or creating stories for Ralph. Triggers on: create a prd, write prd for, plan this feature, requirements for, spec out, convert this prd, ralph."
+description: "Plan a feature and create GitHub Issues (a parent issue with sub-issues across repos on a Project board, or a single-repo milestone) for Ralph autonomous execution. Use when planning a feature, starting a new project, or creating stories for Ralph. Triggers on: create a prd, write prd for, plan this feature, requirements for, spec out, convert this prd, ralph."
 user-invocable: true
 ---
 
@@ -15,9 +15,10 @@ Plan a feature, break it into right-sized stories, and create GitHub Issues for 
 1. Receive a feature description from the user
 2. Ask 3-5 essential clarifying questions (with lettered options)
 3. Generate right-sized user stories
-4. Create a GitHub milestone + issues via `gh` CLI
+4. Create a parent issue + sub-issues (possibly across repos) on a GitHub
+   Project board via `gh` CLI — or, for a single-repo run, a milestone + issues
 
-**Important:** Do NOT start implementing. Just create the milestone and issues.
+**Important:** Do NOT start implementing. Just create the issues.
 
 ---
 
@@ -64,8 +65,8 @@ After receiving the user's answers, spawn a specialist agent using the Agent too
 - The full content of this skill (story sizing rules, ordering rules, acceptance criteria rules, example)
 
 The specialist agent should return:
-- Milestone title and description
-- Ordered list of stories with titles, user story sentences, and acceptance criteria
+- Parent (or milestone) title and description
+- Ordered list of stories with titles, target repo, user story sentences, and acceptance criteria
 
 Use its output verbatim for Step 3. Do not redesign or re-summarize the stories yourself.
 
@@ -96,7 +97,7 @@ Ralph spawns a fresh agent instance per iteration with no memory of previous wor
 
 ### Story Ordering: Dependencies First
 
-Issues are created in dependency order. Ralph picks the oldest `ralph:todo` issue first, so creation order = execution order.
+Issues are created in dependency order, and each agent picks the next story by reading the dependencies. So creation order should match execution order, and a story that depends on another should say so ("Depends on owner/repo#n").
 
 **Correct order:**
 1. Schema/database changes (migrations)
@@ -142,11 +143,83 @@ Verify in browser using dev-browser skill
 
 ---
 
-## Step 3: Create GitHub Milestone & Issues
+## Step 3: Create the Issues
 
 Use `gh` CLI to create everything. Run these commands in sequence.
 
-### Create the milestone
+**Important:** Always write issue bodies to a temp file and use `--body-file`
+instead of `--body`. This avoids Claude Code permission warnings about quoted
+newlines with `#`-prefixed lines.
+
+Ask which mode to use if it is not clear:
+
+- **Parent mode (default)** — stories can be in different repos. State lives on
+  a GitHub Project board with a `Status` field (`Ready`, `In Progress`,
+  `Blocked`, …) and an `Agent-ready` field (`Yes`/`No`). Run with
+  `ralph.sh --parent owner/repo#n --project <n>`.
+- **Milestone mode** — all stories in the current repo, tracked with
+  `ralph:*` labels. Run with `ralph.sh --milestone <name>`.
+
+### Parent mode
+
+#### Create the parent issue
+
+The parent body holds the PRD context: goals, non-goals, success metrics,
+technical considerations, and a link to a spec if there is one.
+
+```bash
+cat > /tmp/parent-body.md << 'ISSUE_EOF'
+<goals, non-goals, technical context, link to spec>
+ISSUE_EOF
+
+PARENT_URL=$(gh issue create -R <owner/repo> --title "<feature name>" --body-file /tmp/parent-body.md)
+gh project item-add <project-number> --owner <owner> --url "$PARENT_URL"
+```
+
+#### Create each sub-issue, in dependency order
+
+Create each story **in the repo whose code it changes**. Start the body with
+`Part of <owner/repo>#<parent>.`
+
+```bash
+cat > /tmp/issue-body.md << 'ISSUE_EOF'
+Part of <owner/repo>#<parent>.
+
+As a [user], I want [feature] so that [benefit].
+
+## Acceptance Criteria
+- [ ] Specific verifiable criterion
+- [ ] Another criterion
+- [ ] Typecheck passes
+ISSUE_EOF
+
+URL=$(gh issue create -R <owner/story-repo> --title "<Story title>" --body-file /tmp/issue-body.md)
+
+# Link it as a sub-issue (needs the numeric issue ID, not the number)
+ID=$(gh api "repos/<owner/story-repo>/issues/${URL##*/}" --jq .id)
+gh api -X POST "repos/<owner/repo>/issues/<parent>/sub_issues" -F sub_issue_id="$ID"
+
+# Put it on the board
+ITEM=$(gh project item-add <project-number> --owner <owner> --url "$URL" --format json --jq .id)
+```
+
+#### Mark stories Ready
+
+Ralph only picks up sub-issues with **Status = Ready** and **Agent-ready =
+Yes**. Get the IDs with `gh project field-list <project-number> --owner <owner>
+--format json`, then:
+
+```bash
+gh project item-edit --project-id <project-id> --id "$ITEM" \
+  --field-id <status-field-id> --single-select-option-id <ready-option-id>
+```
+
+Set Ready for every story. **Set Agent-ready = Yes only when the user says
+so** — it means an agent may do the work without asking them anything.
+
+### Milestone mode
+
+#### Create the milestone
 
 ```bash
 gh api repos/{owner}/{repo}/milestones -f title="<feature-name>" -f description="<goals, non-goals, technical context>"
@@ -154,7 +227,7 @@ gh api repos/{owner}/{repo}/milestones -f title="<feature-name>" -f description=
 
 The milestone description should capture the high-level PRD context: goals, non-goals, success metrics, and technical considerations. This is the only place this information lives.
 
-### Create labels (if they don't exist)
+#### Create labels (if they don't exist)
 
 ```bash
 gh label create "ralph:todo" --color "5319E7" --description "Story not started" --force
@@ -163,11 +236,9 @@ gh label create "ralph:done" --color "0E8A16" --description "Story completed" --
 gh label create "ralph:failed" --color "D93F0B" --description "Story failed" --force
 ```
 
-### Create issues in dependency order
+#### Create issues in dependency order
 
-For each story, create an issue. **Creation order matters** — Ralph picks the oldest `ralph:todo` issue first.
-
-**Important:** Always write the issue body to a temp file and use `--body-file` instead of `--body`. This avoids Claude Code permission warnings about quoted newlines with `#`-prefixed lines.
+For each story, create an issue in the current repo.
 
 ```bash
 cat > /tmp/issue-body.md << 'ISSUE_EOF'
@@ -226,10 +297,10 @@ Each is one focused change that can be completed and verified independently.
 
 **After Q&A, create:**
 
-Milestone: `task-status`
-> Description: "Track task progress with status indicators. Goals: toggle status, filter by status, visual badges. Non-goals: no status history/audit log, no automated status transitions."
+Parent issue: **Task status tracking**
+> "Track task progress with status indicators. Goals: toggle status, filter by status, visual badges. Non-goals: no status history/audit log, no automated status transitions."
 
-Issues (created in this order):
+Sub-issues (created in this order, each starting "Part of owner/repo#<parent>."):
 
 1. **Add status field to tasks table**
    > As a developer, I need to store task status in the database.
@@ -271,4 +342,6 @@ Issues (created in this order):
 - [ ] UI stories have "Verify in browser using dev-browser skill" as criterion
 - [ ] Acceptance criteria are verifiable (not vague)
 - [ ] No story depends on a later story
-- [ ] Milestone description captures goals, non-goals, and technical context
+- [ ] Parent (or milestone) description captures goals, non-goals, and technical context
+- [ ] Parent mode: each sub-issue is in the repo it changes, linked to the parent, on the board, and Ready
+- [ ] Parent mode: Agent-ready = Yes set only where the user agreed
